@@ -29,13 +29,6 @@ const teamImportForm = document.getElementById('teamImportForm');
 const teamImportFile = document.getElementById('teamImportFile');
 const teamList = document.getElementById('teamList');
 
-const shapeForm = document.getElementById('shapeForm');
-const shapeKindInput = document.getElementById('shapeKindInput');
-const shapeNameInput = document.getElementById('shapeNameInput');
-const shapePriceInput = document.getElementById('shapePriceInput');
-const shapeColorInput = document.getElementById('shapeColorInput');
-const shapeList = document.getElementById('shapeList');
-
 const transactionForm = document.getElementById('transactionForm');
 const txTeamSelect = document.getElementById('txTeamSelect');
 const txShapeSelect = document.getElementById('txShapeSelect');
@@ -50,14 +43,6 @@ const revealWinnerBtn = document.getElementById('revealWinnerBtn');
 const hideWinnerBtn = document.getElementById('hideWinnerBtn');
 const resetKeepBtn = document.getElementById('resetKeepBtn');
 const resetAllBtn = document.getElementById('resetAllBtn');
-
-const SHAPE_KIND_LABELS = {
-  square: 'Square',
-  circle: 'Circle',
-  equilateral_triangle: 'Equilateral Triangle',
-  isosceles_triangle: 'Isosceles Triangle',
-  semi_circle: 'Semi Circle'
-};
 
 const socket = io();
 let adminKey = sessionStorage.getItem('trading-admin-key') || '';
@@ -159,24 +144,6 @@ function render(state) {
     teamList.appendChild(row);
   });
 
-  shapeList.innerHTML = '';
-  state.shapes.forEach((shape) => {
-    const row = document.createElement('article');
-    row.className = 'list-item';
-    row.innerHTML = `
-      <div class="list-head">
-        <strong>${shape.name}</strong>
-        <span>${formatMoney(shape.price)}</span>
-      </div>
-      <div class="list-sub">Type: ${SHAPE_KIND_LABELS[shape.kind] || 'Square'} | Color: ${shape.color || '#1f6f8b'}</div>
-      <div class="inline-actions" style="margin-top:8px;">
-        <button data-action="edit-shape" data-id="${shape.id}" class="ghost-button">Edit</button>
-        <button data-action="delete-shape" data-id="${shape.id}" class="danger">Delete</button>
-      </div>
-    `;
-    shapeList.appendChild(row);
-  });
-
   txList.innerHTML = '';
   state.transactions.forEach((txn) => {
     const row = document.createElement('article');
@@ -235,39 +202,6 @@ teamList.addEventListener('click', async (event) => {
       if (!window.confirm('Delete this team and all related transactions?')) return;
       await api(`/api/admin/teams/${id}`, 'DELETE');
       setStatus('Team deleted');
-    }
-  } catch (error) {
-    setStatus(error.message);
-  }
-});
-
-shapeList.addEventListener('click', async (event) => {
-  const target = event.target;
-  if (!(target instanceof HTMLElement)) return;
-  const action = target.getAttribute('data-action');
-  const id = target.getAttribute('data-id');
-  if (!action || !id) return;
-
-  try {
-    if (action === 'edit-shape') {
-      const current = latestState.shapes.find((shape) => shape.id === id);
-      if (!current) return;
-      const name = window.prompt('Shape name', current.name);
-      if (name === null) return;
-      const kind = window.prompt('Type (square, circle, equilateral_triangle, isosceles_triangle, semi_circle)', current.kind || 'square');
-      if (kind === null) return;
-      const price = window.prompt('Price', String(current.price));
-      if (price === null) return;
-      const color = window.prompt('Color (hex)', current.color || '#1f6f8b');
-      if (color === null) return;
-      await api(`/api/admin/shapes/${id}`, 'PUT', { name, kind, price: Number(price), color });
-      setStatus('Shape updated');
-    }
-
-    if (action === 'delete-shape') {
-      if (!window.confirm('Delete this shape?')) return;
-      await api(`/api/admin/shapes/${id}`, 'DELETE');
-      setStatus('Shape deleted');
     }
   } catch (error) {
     setStatus(error.message);
@@ -441,24 +375,6 @@ teamImportForm.addEventListener('submit', async (event) => {
       submitButton.disabled = false;
       submitButton.textContent = 'Upload Team File';
     }
-  }
-});
-
-shapeForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  try {
-    await api('/api/admin/shapes', 'POST', {
-      kind: shapeKindInput.value,
-      name: shapeNameInput.value,
-      price: Number(shapePriceInput.value),
-      color: shapeColorInput.value
-    });
-    shapeNameInput.value = '';
-    shapePriceInput.value = '';
-    shapeKindInput.value = 'square';
-    setStatus('Shape added');
-  } catch (error) {
-    setStatus(error.message);
   }
 });
 
