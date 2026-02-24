@@ -320,7 +320,7 @@ button {
   font: inherit;
 }
 
-input,
+input:not([type="checkbox"]),
 textarea,
 select {
   width: 100%;
@@ -328,6 +328,13 @@ select {
   border-radius: 8px;
   padding: 9px 10px;
   background: #fff;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  min-width: 16px;
+  height: 16px;
+  margin: 0;
 }
 
 button,
@@ -377,7 +384,8 @@ button.winner-btn {
 .checkbox-line {
   display: flex;
   gap: 8px;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .list-stack {
