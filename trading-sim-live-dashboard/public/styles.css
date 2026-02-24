@@ -49,6 +49,25 @@ h3 {
   padding: 22px;
 }
 
+.site-logo {
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.site-logo-small {
+  width: 170px;
+  margin-bottom: 0;
+}
+
+.admin-title-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .round-label {
   color: var(--accent);
   font-weight: 700;
@@ -323,6 +342,11 @@ button.success {
   }
 
   .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-title-block {
     flex-direction: column;
     align-items: flex-start;
   }

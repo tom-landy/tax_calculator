@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'classroom-admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Alpha1234*';
 const DATA_DIR = path.join(__dirname, 'data');
 const STATE_PATH = path.join(DATA_DIR, 'state.json');
 

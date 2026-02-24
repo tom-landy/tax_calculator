@@ -50,3 +50,4 @@ This project includes `render.yaml`.
 
 - If no team image URL is provided, the dashboard shows team initials.
 - Admin auth is a simple shared password sent in request headers. For school use this is usually enough, but do not share the admin URL/password with students.
+- If `ADMIN_PASSWORD` is not set, the app fallback password is `Alpha1234*`.
