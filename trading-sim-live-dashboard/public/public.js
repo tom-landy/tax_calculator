@@ -37,18 +37,18 @@ function shapeSvg(shape) {
   const stroke = 'rgba(255,255,255,0.95)';
 
   if (key === 'circle') {
-    return `<svg viewBox="0 0 120 80" class="shape-svg"><circle cx="60" cy="40" r="24" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
+    return `<svg viewBox="0 0 100 100" class="shape-svg"><circle cx="50" cy="50" r="26" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
   }
   if (key === 'equilateral_triangle') {
-    return `<svg viewBox="0 0 120 80" class="shape-svg"><polygon points="60,14 95,66 25,66" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
+    return `<svg viewBox="0 0 100 100" class="shape-svg"><polygon points="50,16 80,68 20,68" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
   }
   if (key === 'isosceles_triangle') {
-    return `<svg viewBox="0 0 120 80" class="shape-svg"><polygon points="60,12 102,66 18,66" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
+    return `<svg viewBox="0 0 100 100" class="shape-svg"><polygon points="50,10 72,74 28,74" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
   }
   if (key === 'semi_circle') {
-    return `<svg viewBox="0 0 120 80" class="shape-svg"><path d="M24,60 A36,36 0 0 1 96,60" fill="none" stroke="${stroke}" stroke-width="6"/><line x1="24" y1="60" x2="96" y2="60" stroke="${stroke}" stroke-width="6"/></svg>`;
+    return `<svg viewBox="0 0 100 100" class="shape-svg"><path d="M20,66 A30,30 0 0 1 80,66" fill="none" stroke="${stroke}" stroke-width="6"/><line x1="20" y1="66" x2="80" y2="66" stroke="${stroke}" stroke-width="6"/></svg>`;
   }
-  return `<svg viewBox="0 0 120 80" class="shape-svg"><rect x="30" y="18" width="60" height="44" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
+  return `<svg viewBox="0 0 100 100" class="shape-svg"><rect x="24" y="24" width="52" height="52" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
 }
 
 function render(state) {
