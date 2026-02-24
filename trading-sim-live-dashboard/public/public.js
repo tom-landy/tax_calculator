@@ -1,5 +1,6 @@
 const shapesGridEl = document.getElementById('shapesGrid');
 const leaderboardBodyEl = document.getElementById('leaderboardBody');
+const leaderboardSectionEl = document.getElementById('leaderboardSection');
 const teamCardsEl = document.getElementById('teamCards');
 const updatedAtEl = document.getElementById('updatedAt');
 const pausedOverlayEl = document.getElementById('pausedOverlay');
@@ -63,6 +64,7 @@ function render(state) {
     winnerRevealEl.classList.add('hidden');
     winnerTextEl.textContent = '';
   }
+  leaderboardSectionEl.classList.toggle('hidden', !meta.revealWinner);
 
   shapesGridEl.innerHTML = '';
   shapes.forEach((shape) => {
