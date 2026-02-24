@@ -396,11 +396,18 @@ teamForm.addEventListener('submit', async (event) => {
 
 teamImportForm.addEventListener('submit', async (event) => {
   event.preventDefault();
+  const submitButton = teamImportForm.querySelector('button[type="submit"]');
   try {
     const file = teamImportFile.files && teamImportFile.files[0];
     if (!file) {
       setStatus('Select a CSV or spreadsheet file first');
+      window.alert('Select a CSV or spreadsheet file first.');
       return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Uploading...';
     }
 
     const formData = new FormData();
@@ -423,9 +430,17 @@ teamImportForm.addEventListener('submit', async (event) => {
     if (!response.ok) throw new Error(data.error || 'Import failed');
 
     teamImportForm.reset();
-    setStatus(`Imported ${data.imported} teams${data.skipped ? ` (${data.skipped} skipped)` : ''}`);
+    const message = `Imported ${data.imported} teams${data.skipped ? ` (${data.skipped} skipped)` : ''}`;
+    setStatus(message);
+    window.alert(message);
   } catch (error) {
     setStatus(error.message);
+    window.alert(`Upload failed: ${error.message}`);
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Upload Team File';
+    }
   }
 });
 
