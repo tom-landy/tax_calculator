@@ -72,7 +72,7 @@
           <p class="list-sub">Shape order matches your live cards: Square, Circle, Equilateral Triangle, Isosceles Triangle, Semi Circle.</p>
         </section>
 
-        <section class="card admin-card">
+        <section class="card admin-card wide">
           <h2>Add Team</h2>
           <form id="teamForm" class="stack-form">
             <input id="teamNameInput" placeholder="Team / Country name" required />
@@ -85,25 +85,15 @@
             <button type="submit" class="ghost-button">Upload Team File</button>
             <p class="list-sub">Use column headers like <code>name</code> or <code>team</code>. Optional image column: <code>flagUrl</code>, <code>flag</code>, or <code>image</code>.</p>
           </form>
+          <p class="list-sub">Team cash control: enter an amount and click Add Cash as many times as needed each round.</p>
           <div id="teamList" class="list-stack"></div>
-        </section>
-
-        <section class="card admin-card">
-          <h2>Record Batch Sale</h2>
-          <form id="transactionForm" class="stack-form">
-            <select id="txTeamSelect" required></select>
-            <select id="txShapeSelect" required></select>
-            <input id="txAcceptedInput" type="number" min="0" step="1" value="1" placeholder="Accepted quantity" required />
-            <input id="txRejectedInput" type="number" min="0" step="1" value="0" placeholder="Rejected quantity" required />
-            <input id="txNoteInput" placeholder="Optional note" />
-            <button type="submit">Record Sale</button>
-          </form>
         </section>
 
         <section class="card admin-card wide">
           <h2>Recent Activity</h2>
           <div id="txList" class="list-stack"></div>
           <div class="inline-actions wrap">
+            <button id="exportResultsBtn" class="winner-btn">Export Results Spreadsheet</button>
             <button id="resetKeepBtn" class="ghost-button">Reset Scores (Keep teams & shapes)</button>
             <button id="resetAllBtn" class="danger">Reset Everything</button>
           </div>

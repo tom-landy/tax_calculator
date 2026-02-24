@@ -29,18 +29,12 @@ const teamImportForm = document.getElementById('teamImportForm');
 const teamImportFile = document.getElementById('teamImportFile');
 const teamList = document.getElementById('teamList');
 
-const transactionForm = document.getElementById('transactionForm');
-const txTeamSelect = document.getElementById('txTeamSelect');
-const txShapeSelect = document.getElementById('txShapeSelect');
-const txAcceptedInput = document.getElementById('txAcceptedInput');
-const txRejectedInput = document.getElementById('txRejectedInput');
-const txNoteInput = document.getElementById('txNoteInput');
-
 const txList = document.getElementById('txList');
 const buzzerBtn = document.getElementById('buzzerBtn');
 const resumeBtn = document.getElementById('resumeBtn');
 const revealWinnerBtn = document.getElementById('revealWinnerBtn');
 const hideWinnerBtn = document.getElementById('hideWinnerBtn');
+const exportResultsBtn = document.getElementById('exportResultsBtn');
 const resetKeepBtn = document.getElementById('resetKeepBtn');
 const resetAllBtn = document.getElementById('resetAllBtn');
 
@@ -121,9 +115,6 @@ function render(state) {
     return `<button type="button" class="round-btn ${activeClass}" data-round="${roundNum}">Round ${roundNum}</button>`;
   }).join('');
 
-  txTeamSelect.innerHTML = state.teams.map((team) => `<option value="${team.id}">${team.name}</option>`).join('');
-  txShapeSelect.innerHTML = state.shapes.map((shape) => `<option value="${shape.id}">${shape.name} (${formatMoney(shape.price)})</option>`).join('');
-
   teamList.innerHTML = '';
   state.teams.forEach((team) => {
     const row = document.createElement('article');
@@ -135,9 +126,9 @@ function render(state) {
       </div>
       <div class="list-sub">Shapes Traded: ${team.traded || 0} | Accepted: ${team.accepted || 0} | Rejected: ${team.rejected || 0}</div>
       <div class="inline-actions wrap" style="margin-top:8px;">
+        <input data-team-cash-input="${team.id}" type="number" min="0" step="1" value="10" style="max-width:120px;" />
+        <button data-action="add-cash" data-id="${team.id}">Add Cash</button>
         <button data-action="edit-team" data-id="${team.id}" class="ghost-button">Edit</button>
-        <button data-action="plus-cash" data-id="${team.id}">+ $10</button>
-        <button data-action="minus-cash" data-id="${team.id}" class="ghost-button">- $10</button>
         <button data-action="delete-team" data-id="${team.id}" class="danger">Delete</button>
       </div>
     `;
@@ -188,13 +179,14 @@ teamList.addEventListener('click', async (event) => {
       setStatus('Team updated');
     }
 
-    if (action === 'plus-cash') {
-      await api(`/api/admin/teams/${id}/adjust-cash`, 'POST', { amount: 10, reason: 'Quick adjust +10' });
-      setStatus('Cash adjusted');
-    }
-
-    if (action === 'minus-cash') {
-      await api(`/api/admin/teams/${id}/adjust-cash`, 'POST', { amount: -10, reason: 'Quick adjust -10' });
+    if (action === 'add-cash') {
+      const input = teamList.querySelector(`[data-team-cash-input="${id}"]`);
+      const amount = Number(input && input.value);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        setStatus('Enter a valid positive cash amount');
+        return;
+      }
+      await api(`/api/admin/teams/${id}/adjust-cash`, 'POST', { amount, reason: 'Round cash add' });
       setStatus('Cash adjusted');
     }
 
@@ -378,25 +370,6 @@ teamImportForm.addEventListener('submit', async (event) => {
   }
 });
 
-transactionForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  try {
-    await api('/api/admin/transactions', 'POST', {
-      teamId: txTeamSelect.value,
-      shapeId: txShapeSelect.value,
-      quantityAccepted: Number(txAcceptedInput.value),
-      quantityRejected: Number(txRejectedInput.value),
-      note: txNoteInput.value
-    });
-    txAcceptedInput.value = '1';
-    txRejectedInput.value = '0';
-    txNoteInput.value = '';
-    setStatus('Sale recorded');
-  } catch (error) {
-    setStatus(error.message);
-  }
-});
-
 buzzerBtn.addEventListener('click', async () => {
   try {
     const message = window.prompt('Optional buzzer message', 'Buzzer: stop immediately and listen for instructions.');
@@ -432,6 +405,40 @@ hideWinnerBtn.addEventListener('click', async () => {
   try {
     await api('/api/admin/hide-winner', 'POST');
     setStatus('Winner reveal hidden');
+  } catch (error) {
+    setStatus(error.message);
+  }
+});
+
+exportResultsBtn.addEventListener('click', async () => {
+  try {
+    const response = await fetch('/api/admin/export/results.xlsx', {
+      method: 'GET',
+      headers: { ...(adminKey ? { 'x-admin-key': adminKey } : {}) }
+    });
+
+    if (response.status === 401) {
+      adminKey = '';
+      sessionStorage.removeItem('trading-admin-key');
+      setLoggedIn(false);
+      throw new Error('Unauthorized');
+    }
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || 'Export failed');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `trading-sim-results-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    setStatus('Results spreadsheet downloaded');
   } catch (error) {
     setStatus(error.message);
   }
