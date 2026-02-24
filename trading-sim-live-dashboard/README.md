@@ -13,6 +13,7 @@ A real-time classroom trading game dashboard with two interfaces:
 - Batch sale entry with accepted/rejected quantities.
 - Price changes reflected immediately.
 - Buzzer stop/resume controls.
+- Team bulk import from `.csv`, `.xls`, or `.xlsx` in admin.
 - Data persisted in `data/state.json`.
 
 ## Local Run
@@ -51,3 +52,4 @@ This project includes `render.yaml`.
 - If no team image URL is provided, the dashboard shows team initials.
 - Admin auth is a simple shared password sent in request headers. For school use this is usually enough, but do not share the admin URL/password with students.
 - If `ADMIN_PASSWORD` is not set, the app fallback password is `Alpha1234*`.
+- Team import columns: use `name` or `team` (required), and optionally `flagUrl`/`flag`/`image`.

@@ -16,6 +16,8 @@ const pausedInput = document.getElementById('pausedInput');
 const teamForm = document.getElementById('teamForm');
 const teamNameInput = document.getElementById('teamNameInput');
 const teamFlagInput = document.getElementById('teamFlagInput');
+const teamImportForm = document.getElementById('teamImportForm');
+const teamImportFile = document.getElementById('teamImportFile');
 const teamList = document.getElementById('teamList');
 
 const shapeForm = document.getElementById('shapeForm');
@@ -303,6 +305,41 @@ teamForm.addEventListener('submit', async (event) => {
     teamNameInput.value = '';
     teamFlagInput.value = '';
     setStatus('Team added');
+  } catch (error) {
+    setStatus(error.message);
+  }
+});
+
+teamImportForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  try {
+    const file = teamImportFile.files && teamImportFile.files[0];
+    if (!file) {
+      setStatus('Select a CSV or spreadsheet file first');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/admin/teams/import', {
+      method: 'POST',
+      headers: { ...(adminKey ? { 'x-admin-key': adminKey } : {}) },
+      body: formData
+    });
+
+    if (response.status === 401) {
+      adminKey = '';
+      sessionStorage.removeItem('trading-admin-key');
+      setLoggedIn(false);
+      throw new Error('Unauthorized');
+    }
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Import failed');
+
+    teamImportForm.reset();
+    setStatus(`Imported ${data.imported} teams${data.skipped ? ` (${data.skipped} skipped)` : ''}`);
   } catch (error) {
     setStatus(error.message);
   }

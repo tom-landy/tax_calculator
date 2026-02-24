@@ -61,6 +61,12 @@
             <input id="teamFlagInput" placeholder="Image URL (optional)" />
             <button type="submit">Add Team</button>
           </form>
+          <form id="teamImportForm" class="stack-form" style="margin-top:12px;">
+            <label for="teamImportFile"><strong>Bulk import teams</strong> (.csv, .xls, .xlsx)</label>
+            <input id="teamImportFile" type="file" accept=".csv,.xls,.xlsx" required />
+            <button type="submit" class="ghost-button">Upload Team File</button>
+            <p class="list-sub">Use column headers like <code>name</code> or <code>team</code>. Optional image column: <code>flagUrl</code>, <code>flag</code>, or <code>image</code>.</p>
+          </form>
           <div id="teamList" class="list-stack"></div>
         </section>
 

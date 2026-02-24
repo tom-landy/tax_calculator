@@ -2,6 +2,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const multer = require('multer');
+const XLSX = require('xlsx');
 const { Server } = require('socket.io');
 
 const app = express();
@@ -12,6 +14,7 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Alpha1234*';
 const DATA_DIR = path.join(__dirname, 'data');
 const STATE_PATH = path.join(DATA_DIR, 'state.json');
+const upload = multer({ storage: multer.memoryStorage() });
 
 const ALLOWED_SHAPE_KINDS = new Set([
   'square',
@@ -103,6 +106,82 @@ function normalizeShape(shape = {}) {
     price: Number.isFinite(Number(shape.price)) ? Number(shape.price) : 0,
     color: typeof shape.color === 'string' && shape.color.trim() ? shape.color : '#1f6f8b'
   };
+}
+
+function parseCsvLine(line = '') {
+  const values = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      values.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  values.push(current.trim());
+  return values.map((value) => value.replace(/^"|"$/g, '').trim());
+}
+
+function rowsFromCsvBuffer(buffer) {
+  const text = buffer.toString('utf8').replace(/\r/g, '');
+  const lines = text.split('\n').filter((line) => line.trim() !== '');
+  if (!lines.length) return [];
+
+  const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
+  const dataLines = lines.slice(1);
+  return dataLines.map((line) => {
+    const cols = parseCsvLine(line);
+    return headers.reduce((row, header, idx) => {
+      row[header] = cols[idx] || '';
+      return row;
+    }, {});
+  });
+}
+
+function rowsFromSpreadsheetBuffer(buffer) {
+  const workbook = XLSX.read(buffer, { type: 'buffer' });
+  if (!workbook.SheetNames.length) return [];
+  const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+}
+
+function candidateTeamName(row = {}) {
+  return String(
+    row.name ||
+    row.team ||
+    row.team_name ||
+    row.country ||
+    row.country_name ||
+    row.Name ||
+    row.Team ||
+    row.Country ||
+    ''
+  ).trim();
+}
+
+function candidateFlagUrl(row = {}) {
+  return String(
+    row.flagurl ||
+    row.flag_url ||
+    row.flag ||
+    row.image ||
+    row.logo ||
+    row.FlagURL ||
+    row.Flag ||
+    row.Image ||
+    ''
+  ).trim();
 }
 
 function loadState() {
@@ -242,6 +321,72 @@ app.post('/api/admin/teams', requireAdmin, (req, res) => {
   saveState();
   broadcastState();
   res.status(201).json({ ok: true, team });
+});
+
+app.post('/api/admin/teams/import', requireAdmin, upload.single('file'), (req, res) => {
+  if (!req.file || !req.file.buffer) {
+    return res.status(400).json({ error: 'Upload a CSV or XLSX file' });
+  }
+
+  const fileName = (req.file.originalname || '').toLowerCase();
+  const isCsv = fileName.endsWith('.csv');
+  const isXlsx = fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
+
+  if (!isCsv && !isXlsx) {
+    return res.status(400).json({ error: 'File must be .csv, .xls, or .xlsx' });
+  }
+
+  let rows = [];
+  try {
+    rows = isCsv ? rowsFromCsvBuffer(req.file.buffer) : rowsFromSpreadsheetBuffer(req.file.buffer);
+  } catch (error) {
+    return res.status(400).json({ error: `Unable to read file: ${error.message}` });
+  }
+
+  const existing = new Set(state.teams.map((team) => team.name.toLowerCase()));
+  const seen = new Set();
+  const created = [];
+  let skipped = 0;
+
+  rows.forEach((rawRow) => {
+    const row = Object.fromEntries(Object.entries(rawRow).map(([k, v]) => [String(k).trim(), v]));
+    const name = candidateTeamName(row);
+    if (!name) {
+      skipped += 1;
+      return;
+    }
+    const key = name.toLowerCase();
+    if (existing.has(key) || seen.has(key)) {
+      skipped += 1;
+      return;
+    }
+
+    seen.add(key);
+    const team = {
+      id: makeId('team'),
+      name,
+      flagUrl: candidateFlagUrl(row),
+      cash: 0,
+      accepted: 0,
+      rejected: 0,
+      traded: 0
+    };
+    state.teams.push(team);
+    created.push(team);
+  });
+
+  if (!created.length && rows.length) {
+    return res.status(400).json({ error: 'No valid new teams found. Check columns like name/team/country.' });
+  }
+
+  saveState();
+  broadcastState();
+  res.status(201).json({
+    ok: true,
+    imported: created.length,
+    skipped,
+    teams: created
+  });
 });
 
 app.put('/api/admin/teams/:teamId', requireAdmin, (req, res) => {
