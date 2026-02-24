@@ -6,26 +6,46 @@
     "announcement": "Welcome to the trading floor.",
     "paused": false,
     "buzzerCount": 0,
-    "updatedAt": "2026-02-24T10:18:55.929Z"
+    "revealWinner": false,
+    "winnerTeamId": "",
+    "winnerName": "",
+    "updatedAt": "2026-02-24T12:44:23.595Z"
   },
   "shapes": [
     {
       "id": "shape_square",
       "name": "Square",
+      "kind": "square",
       "price": 50,
       "color": "#0b3c5d"
     },
     {
-      "id": "shape_triangle",
-      "name": "Triangle",
-      "price": 75,
+      "id": "shape_circle",
+      "name": "Circle",
+      "kind": "circle",
+      "price": 70,
       "color": "#328cc1"
     },
     {
-      "id": "shape_circle",
-      "name": "Circle",
-      "price": 100,
-      "color": "#d9b310"
+      "id": "shape_equilateral_triangle",
+      "name": "Equilateral Triangle",
+      "kind": "equilateral_triangle",
+      "price": 90,
+      "color": "#0f766e"
+    },
+    {
+      "id": "shape_isosceles_triangle",
+      "name": "Isosceles Triangle",
+      "kind": "isosceles_triangle",
+      "price": 85,
+      "color": "#b45309"
+    },
+    {
+      "id": "shape_semi_circle",
+      "name": "Semi Circle",
+      "kind": "semi_circle",
+      "price": 65,
+      "color": "#7c3aed"
     }
   ],
   "teams": [
@@ -33,9 +53,10 @@
       "id": "team_1771928298552_r404hw",
       "name": "Team 1",
       "flagUrl": "",
-      "cash": 0,
+      "cash": 30,
       "accepted": 0,
-      "rejected": 0
+      "rejected": 0,
+      "traded": 0
     },
     {
       "id": "team_1771928302048_3fvwcj",
@@ -43,7 +64,8 @@
       "flagUrl": "",
       "cash": 0,
       "accepted": 0,
-      "rejected": 0
+      "rejected": 0,
+      "traded": 0
     },
     {
       "id": "team_1771928305905_62i8sd",
@@ -51,16 +73,100 @@
       "flagUrl": "",
       "cash": 0,
       "accepted": 0,
-      "rejected": 0
+      "rejected": 0,
+      "traded": 0
     },
     {
       "id": "team_1771928335929_6qbtn2",
       "name": "beck",
       "flagUrl": "",
-      "cash": 0,
+      "cash": 30,
       "accepted": 0,
-      "rejected": 0
+      "rejected": 0,
+      "traded": 0
+    },
+    {
+      "id": "team_1771937034348_ebchkm",
+      "name": "Sam",
+      "flagUrl": "",
+      "cash": 20,
+      "accepted": 0,
+      "rejected": 0,
+      "traded": 0
     }
   ],
-  "transactions": []
+  "transactions": [
+    {
+      "id": "txn_1771937060401_7vewkm",
+      "timestamp": "2026-02-24T12:44:20.401Z",
+      "type": "manual_adjustment",
+      "teamId": "team_1771928335929_6qbtn2",
+      "teamName": "beck",
+      "amount": 10,
+      "note": "Quick adjust +10"
+    },
+    {
+      "id": "txn_1771937060600_ekc4oh",
+      "timestamp": "2026-02-24T12:44:20.600Z",
+      "type": "manual_adjustment",
+      "teamId": "team_1771928335929_6qbtn2",
+      "teamName": "beck",
+      "amount": 10,
+      "note": "Quick adjust +10"
+    },
+    {
+      "id": "txn_1771937060858_hisyhz",
+      "timestamp": "2026-02-24T12:44:20.858Z",
+      "type": "manual_adjustment",
+      "teamId": "team_1771928335929_6qbtn2",
+      "teamName": "beck",
+      "amount": 10,
+      "note": "Quick adjust +10"
+    },
+    {
+      "id": "txn_1771937062829_e8in9d",
+      "timestamp": "2026-02-24T12:44:22.829Z",
+      "type": "manual_adjustment",
+      "teamId": "team_1771928298552_r404hw",
+      "teamName": "Team 1",
+      "amount": 10,
+      "note": "Quick adjust +10"
+    },
+    {
+      "id": "txn_1771937063029_acowmx",
+      "timestamp": "2026-02-24T12:44:23.029Z",
+      "type": "manual_adjustment",
+      "teamId": "team_1771937034348_ebchkm",
+      "teamName": "Sam",
+      "amount": 10,
+      "note": "Quick adjust +10"
+    },
+    {
+      "id": "txn_1771937063229_wci4cg",
+      "timestamp": "2026-02-24T12:44:23.229Z",
+      "type": "manual_adjustment",
+      "teamId": "team_1771928298552_r404hw",
+      "teamName": "Team 1",
+      "amount": 10,
+      "note": "Quick adjust +10"
+    },
+    {
+      "id": "txn_1771937063411_mt9rop",
+      "timestamp": "2026-02-24T12:44:23.411Z",
+      "type": "manual_adjustment",
+      "teamId": "team_1771937034348_ebchkm",
+      "teamName": "Sam",
+      "amount": 10,
+      "note": "Quick adjust +10"
+    },
+    {
+      "id": "txn_1771937063595_lt2z5g",
+      "timestamp": "2026-02-24T12:44:23.595Z",
+      "type": "manual_adjustment",
+      "teamId": "team_1771928298552_r404hw",
+      "teamName": "Team 1",
+      "amount": 10,
+      "note": "Quick adjust +10"
+    }
+  ]
 }

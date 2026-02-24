@@ -13,6 +13,14 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Alpha1234*';
 const DATA_DIR = path.join(__dirname, 'data');
 const STATE_PATH = path.join(DATA_DIR, 'state.json');
 
+const ALLOWED_SHAPE_KINDS = new Set([
+  'square',
+  'circle',
+  'equilateral_triangle',
+  'isosceles_triangle',
+  'semi_circle'
+]);
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -24,6 +32,27 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function inferShapeKind(name = '') {
+  const normalized = String(name).toLowerCase().replace(/\s+/g, '_');
+  if (normalized.includes('square')) return 'square';
+  if (normalized.includes('semi') && normalized.includes('circle')) return 'semi_circle';
+  if (normalized.includes('equilateral')) return 'equilateral_triangle';
+  if (normalized.includes('isosceles')) return 'isosceles_triangle';
+  if (normalized.includes('circle')) return 'circle';
+  if (normalized.includes('triangle')) return 'equilateral_triangle';
+  return 'square';
+}
+
+function defaultShapes() {
+  return [
+    { id: makeId('shape'), name: 'Square', kind: 'square', price: 50, color: '#0b3c5d' },
+    { id: makeId('shape'), name: 'Circle', kind: 'circle', price: 70, color: '#328cc1' },
+    { id: makeId('shape'), name: 'Equilateral Triangle', kind: 'equilateral_triangle', price: 90, color: '#0f766e' },
+    { id: makeId('shape'), name: 'Isosceles Triangle', kind: 'isosceles_triangle', price: 85, color: '#b45309' },
+    { id: makeId('shape'), name: 'Semi Circle', kind: 'semi_circle', price: 65, color: '#7c3aed' }
+  ];
+}
+
 function defaultState() {
   return {
     meta: {
@@ -33,13 +62,12 @@ function defaultState() {
       announcement: 'Welcome to the trading floor.',
       paused: false,
       buzzerCount: 0,
+      revealWinner: false,
+      winnerTeamId: '',
+      winnerName: '',
       updatedAt: nowIso()
     },
-    shapes: [
-      { id: makeId('shape'), name: 'Square', price: 50, color: '#0b3c5d' },
-      { id: makeId('shape'), name: 'Triangle', price: 75, color: '#328cc1' },
-      { id: makeId('shape'), name: 'Circle', price: 100, color: '#d9b310' }
-    ],
+    shapes: defaultShapes(),
     teams: [],
     transactions: []
   };
@@ -49,6 +77,32 @@ function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
+}
+
+function normalizeTeam(team = {}) {
+  return {
+    id: team.id || makeId('team'),
+    name: typeof team.name === 'string' ? team.name : 'Team',
+    flagUrl: typeof team.flagUrl === 'string' ? team.flagUrl : '',
+    cash: Number.isFinite(Number(team.cash)) ? Number(team.cash) : 0,
+    accepted: Number.isFinite(Number(team.accepted)) ? Number(team.accepted) : 0,
+    rejected: Number.isFinite(Number(team.rejected)) ? Number(team.rejected) : 0,
+    traded: Number.isFinite(Number(team.traded)) ? Number(team.traded) : 0
+  };
+}
+
+function normalizeShape(shape = {}) {
+  const kind = typeof shape.kind === 'string' && ALLOWED_SHAPE_KINDS.has(shape.kind)
+    ? shape.kind
+    : inferShapeKind(shape.name);
+
+  return {
+    id: shape.id || makeId('shape'),
+    name: typeof shape.name === 'string' ? shape.name : 'Shape',
+    kind,
+    price: Number.isFinite(Number(shape.price)) ? Number(shape.price) : 0,
+    color: typeof shape.color === 'string' && shape.color.trim() ? shape.color : '#1f6f8b'
+  };
 }
 
 function loadState() {
@@ -61,15 +115,16 @@ function loadState() {
 
   try {
     const parsed = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'));
+    const defaults = defaultState();
     return {
-      ...defaultState(),
+      ...defaults,
       ...parsed,
       meta: {
-        ...defaultState().meta,
+        ...defaults.meta,
         ...(parsed.meta || {})
       },
-      teams: Array.isArray(parsed.teams) ? parsed.teams : [],
-      shapes: Array.isArray(parsed.shapes) ? parsed.shapes : defaultState().shapes,
+      teams: Array.isArray(parsed.teams) ? parsed.teams.map(normalizeTeam) : [],
+      shapes: Array.isArray(parsed.shapes) ? parsed.shapes.map(normalizeShape) : defaults.shapes,
       transactions: Array.isArray(parsed.transactions) ? parsed.transactions : []
     };
   } catch (error) {
@@ -89,17 +144,28 @@ function rankTeams(teams) {
   return [...teams]
     .sort((a, b) => {
       if (b.cash !== a.cash) return b.cash - a.cash;
-      if ((b.accepted || 0) !== (a.accepted || 0)) return (b.accepted || 0) - (a.accepted || 0);
+      if ((b.traded || 0) !== (a.traded || 0)) return (b.traded || 0) - (a.traded || 0);
       return a.name.localeCompare(b.name);
     })
     .map((team, index) => ({ ...team, rank: index + 1 }));
 }
 
 function publicState() {
+  const rankedTeams = rankTeams(state.teams);
+  const winner = state.meta.revealWinner && rankedTeams.length
+    ? {
+        id: rankedTeams[0].id,
+        name: rankedTeams[0].name,
+        cash: rankedTeams[0].cash,
+        traded: rankedTeams[0].traded || 0
+      }
+    : null;
+
   return {
     meta: state.meta,
     shapes: state.shapes,
-    teams: rankTeams(state.teams)
+    teams: rankedTeams,
+    winner
   };
 }
 
@@ -169,7 +235,8 @@ app.post('/api/admin/teams', requireAdmin, (req, res) => {
     flagUrl: typeof flagUrl === 'string' ? flagUrl.trim() : '',
     cash: 0,
     accepted: 0,
-    rejected: 0
+    rejected: 0,
+    traded: 0
   };
   state.teams.push(team);
   saveState();
@@ -241,7 +308,7 @@ app.delete('/api/admin/teams/:teamId', requireAdmin, (req, res) => {
 });
 
 app.post('/api/admin/shapes', requireAdmin, (req, res) => {
-  const { name, price, color } = req.body || {};
+  const { name, price, color, kind } = req.body || {};
   const numericPrice = Number(price);
   if (!name || typeof name !== 'string') {
     return res.status(400).json({ error: 'Shape name is required' });
@@ -250,9 +317,14 @@ app.post('/api/admin/shapes', requireAdmin, (req, res) => {
     return res.status(400).json({ error: 'Shape price must be 0 or higher' });
   }
 
+  const normalizedKind = typeof kind === 'string' && ALLOWED_SHAPE_KINDS.has(kind)
+    ? kind
+    : inferShapeKind(name);
+
   const shape = {
     id: makeId('shape'),
     name: name.trim(),
+    kind: normalizedKind,
     price: numericPrice,
     color: typeof color === 'string' && color.trim() ? color.trim() : '#1f6f8b'
   };
@@ -269,7 +341,7 @@ app.put('/api/admin/shapes/:shapeId', requireAdmin, (req, res) => {
     return res.status(404).json({ error: 'Shape not found' });
   }
 
-  const { name, price, color } = req.body || {};
+  const { name, price, color, kind } = req.body || {};
   if (typeof name === 'string') {
     const trimmed = name.trim();
     if (trimmed) shape.name = trimmed;
@@ -283,6 +355,12 @@ app.put('/api/admin/shapes/:shapeId', requireAdmin, (req, res) => {
   }
   if (typeof color === 'string' && color.trim()) {
     shape.color = color.trim();
+  }
+  if (typeof kind === 'string' && ALLOWED_SHAPE_KINDS.has(kind)) {
+    shape.kind = kind;
+  }
+  if (!shape.kind) {
+    shape.kind = inferShapeKind(shape.name);
   }
 
   saveState();
@@ -325,10 +403,12 @@ app.post('/api/admin/transactions', requireAdmin, (req, res) => {
     return res.status(400).json({ error: 'At least one quantity must be greater than 0' });
   }
 
+  const traded = accepted + rejected;
   const total = accepted * shape.price;
   team.cash += total;
   team.accepted += accepted;
   team.rejected += rejected;
+  team.traded = (team.traded || 0) + traded;
 
   state.transactions.push({
     id: makeId('txn'),
@@ -341,6 +421,7 @@ app.post('/api/admin/transactions', requireAdmin, (req, res) => {
     unitPrice: shape.price,
     quantityAccepted: accepted,
     quantityRejected: rejected,
+    quantityTraded: traded,
     total,
     note: typeof note === 'string' ? note.trim() : ''
   });
@@ -384,15 +465,51 @@ app.post('/api/admin/resume', requireAdmin, (req, res) => {
   res.json({ ok: true, meta: state.meta });
 });
 
+app.post('/api/admin/reveal-winner', requireAdmin, (req, res) => {
+  const ranked = rankTeams(state.teams);
+  if (!ranked.length) {
+    return res.status(400).json({ error: 'No teams available to reveal a winner' });
+  }
+
+  const winner = ranked[0];
+  state.meta.revealWinner = true;
+  state.meta.winnerTeamId = winner.id;
+  state.meta.winnerName = winner.name;
+  state.meta.announcement = `Winner reveal: ${winner.name} with $${winner.cash.toLocaleString()}!`;
+
+  state.transactions.push({
+    id: makeId('txn'),
+    timestamp: nowIso(),
+    type: 'winner_reveal',
+    teamId: winner.id,
+    teamName: winner.name,
+    note: state.meta.announcement
+  });
+
+  saveState();
+  broadcastState();
+  res.json({ ok: true, winner });
+});
+
+app.post('/api/admin/hide-winner', requireAdmin, (req, res) => {
+  state.meta.revealWinner = false;
+  state.meta.winnerTeamId = '';
+  state.meta.winnerName = '';
+
+  saveState();
+  broadcastState();
+  res.json({ ok: true });
+});
+
 app.post('/api/admin/reset', requireAdmin, (req, res) => {
   const keepTeams = Boolean(req.body && req.body.keepTeams);
   const keepShapes = Boolean(req.body && req.body.keepShapes);
 
   const preservedTeams = keepTeams
-    ? state.teams.map((team) => ({ ...team, cash: 0, accepted: 0, rejected: 0 }))
+    ? state.teams.map((team) => ({ ...team, cash: 0, accepted: 0, rejected: 0, traded: 0 }))
     : [];
 
-  const preservedShapes = keepShapes ? [...state.shapes] : defaultState().shapes;
+  const preservedShapes = keepShapes ? [...state.shapes] : defaultShapes();
 
   state = {
     ...defaultState(),

@@ -19,6 +19,7 @@ const teamFlagInput = document.getElementById('teamFlagInput');
 const teamList = document.getElementById('teamList');
 
 const shapeForm = document.getElementById('shapeForm');
+const shapeKindInput = document.getElementById('shapeKindInput');
 const shapeNameInput = document.getElementById('shapeNameInput');
 const shapePriceInput = document.getElementById('shapePriceInput');
 const shapeColorInput = document.getElementById('shapeColorInput');
@@ -34,8 +35,18 @@ const txNoteInput = document.getElementById('txNoteInput');
 const txList = document.getElementById('txList');
 const buzzerBtn = document.getElementById('buzzerBtn');
 const resumeBtn = document.getElementById('resumeBtn');
+const revealWinnerBtn = document.getElementById('revealWinnerBtn');
+const hideWinnerBtn = document.getElementById('hideWinnerBtn');
 const resetKeepBtn = document.getElementById('resetKeepBtn');
 const resetAllBtn = document.getElementById('resetAllBtn');
+
+const SHAPE_KIND_LABELS = {
+  square: 'Square',
+  circle: 'Circle',
+  equilateral_triangle: 'Equilateral Triangle',
+  isosceles_triangle: 'Isosceles Triangle',
+  semi_circle: 'Semi Circle'
+};
 
 const socket = io();
 let adminKey = sessionStorage.getItem('trading-admin-key') || '';
@@ -109,7 +120,7 @@ function render(state) {
         <strong>${team.name}</strong>
         <span>${formatMoney(team.cash)}</span>
       </div>
-      <div class="list-sub">Accepted: ${team.accepted || 0} | Rejected: ${team.rejected || 0}</div>
+      <div class="list-sub">Shapes Traded: ${team.traded || 0} | Accepted: ${team.accepted || 0} | Rejected: ${team.rejected || 0}</div>
       <div class="inline-actions wrap" style="margin-top:8px;">
         <button data-action="edit-team" data-id="${team.id}" class="ghost-button">Edit</button>
         <button data-action="plus-cash" data-id="${team.id}">+ $10</button>
@@ -129,7 +140,7 @@ function render(state) {
         <strong>${shape.name}</strong>
         <span>${formatMoney(shape.price)}</span>
       </div>
-      <div class="list-sub">Color: ${shape.color || '#1f6f8b'}</div>
+      <div class="list-sub">Type: ${SHAPE_KIND_LABELS[shape.kind] || 'Square'} | Color: ${shape.color || '#1f6f8b'}</div>
       <div class="inline-actions" style="margin-top:8px;">
         <button data-action="edit-shape" data-id="${shape.id}" class="ghost-button">Edit</button>
         <button data-action="delete-shape" data-id="${shape.id}" class="danger">Delete</button>
@@ -215,11 +226,13 @@ shapeList.addEventListener('click', async (event) => {
       if (!current) return;
       const name = window.prompt('Shape name', current.name);
       if (name === null) return;
+      const kind = window.prompt('Type (square, circle, equilateral_triangle, isosceles_triangle, semi_circle)', current.kind || 'square');
+      if (kind === null) return;
       const price = window.prompt('Price', String(current.price));
       if (price === null) return;
       const color = window.prompt('Color (hex)', current.color || '#1f6f8b');
       if (color === null) return;
-      await api(`/api/admin/shapes/${id}`, 'PUT', { name, price: Number(price), color });
+      await api(`/api/admin/shapes/${id}`, 'PUT', { name, kind, price: Number(price), color });
       setStatus('Shape updated');
     }
 
@@ -299,12 +312,14 @@ shapeForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   try {
     await api('/api/admin/shapes', 'POST', {
+      kind: shapeKindInput.value,
       name: shapeNameInput.value,
       price: Number(shapePriceInput.value),
       color: shapeColorInput.value
     });
     shapeNameInput.value = '';
     shapePriceInput.value = '';
+    shapeKindInput.value = 'square';
     setStatus('Shape added');
   } catch (error) {
     setStatus(error.message);
@@ -347,6 +362,24 @@ resumeBtn.addEventListener('click', async () => {
     if (message === null) return;
     await api('/api/admin/resume', 'POST', { message });
     setStatus('Trading resumed');
+  } catch (error) {
+    setStatus(error.message);
+  }
+});
+
+revealWinnerBtn.addEventListener('click', async () => {
+  try {
+    await api('/api/admin/reveal-winner', 'POST');
+    setStatus('Winner reveal is now live');
+  } catch (error) {
+    setStatus(error.message);
+  }
+});
+
+hideWinnerBtn.addEventListener('click', async () => {
+  try {
+    await api('/api/admin/hide-winner', 'POST');
+    setStatus('Winner reveal hidden');
   } catch (error) {
     setStatus(error.message);
   }

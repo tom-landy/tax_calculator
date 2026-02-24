@@ -49,6 +49,8 @@
           <div class="inline-actions wrap">
             <button id="buzzerBtn" class="danger">Buzzer: Stop All</button>
             <button id="resumeBtn" class="success">Resume Trading</button>
+            <button id="revealWinnerBtn" class="winner-btn">Reveal Winner</button>
+            <button id="hideWinnerBtn" class="ghost-button">Hide Reveal</button>
           </div>
         </section>
 
@@ -65,6 +67,13 @@
         <section class="card admin-card">
           <h2>Shape Prices</h2>
           <form id="shapeForm" class="stack-form">
+            <select id="shapeKindInput" required>
+              <option value="square">Square</option>
+              <option value="circle">Circle</option>
+              <option value="equilateral_triangle">Equilateral Triangle</option>
+              <option value="isosceles_triangle">Isosceles Triangle</option>
+              <option value="semi_circle">Semi Circle</option>
+            </select>
             <input id="shapeNameInput" placeholder="Shape name" required />
             <input id="shapePriceInput" type="number" min="0" step="1" placeholder="Price" required />
             <input id="shapeColorInput" type="color" value="#1f6f8b" />

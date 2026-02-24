@@ -29,7 +29,7 @@ h3 {
 }
 
 .layout {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 20px 18px 48px;
   display: grid;
@@ -99,7 +99,14 @@ h3 {
   margin-top: 10px;
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.shape-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.team-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
 .shape-card,
@@ -113,10 +120,28 @@ h3 {
 .shape-card {
   color: #fff;
   border: none;
+  min-height: 240px;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: 8px;
+}
+
+.shape-art {
+  border: 2px dashed rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  min-height: 140px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.shape-svg {
+  width: 92%;
+  height: 92%;
 }
 
 .shape-card .price {
-  font-size: 1.4rem;
+  font-size: 1.7rem;
   font-weight: 700;
 }
 
@@ -180,6 +205,34 @@ tr.top-rank {
 .money {
   font-size: 1.4rem;
   font-weight: 700;
+}
+
+.winner-reveal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+  display: grid;
+  place-items: center;
+  z-index: 30;
+}
+
+.winner-box {
+  width: min(92vw, 680px);
+  background: linear-gradient(160deg, #fef3c7, #fde68a);
+  border: 3px solid #f59e0b;
+  border-radius: 20px;
+  padding: 26px;
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+
+.winner-box h2 {
+  font-size: 3rem;
+}
+
+.winner-box p {
+  font-size: 1.3rem;
+  margin: 8px 0 0;
 }
 
 .paused-overlay {
@@ -284,6 +337,10 @@ button.success {
   background: var(--ok);
 }
 
+button.winner-btn {
+  background: #ca8a04;
+}
+
 .inline-actions {
   display: flex;
   gap: 8px;
@@ -336,6 +393,12 @@ button.success {
   color: #334155;
 }
 
+@media (max-width: 1200px) {
+  .shape-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
   .admin-grid {
     grid-template-columns: 1fr;
@@ -349,5 +412,15 @@ button.success {
   .admin-title-block {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .shape-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .shape-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -34,6 +34,13 @@
 
     <section>
       <div class="section-header">
+        <h2>Country Cards</h2>
+      </div>
+      <div id="teamCards" class="team-grid"></div>
+    </section>
+
+    <section>
+      <div class="section-header">
         <h2>Leaderboard</h2>
         <p id="updatedAt" class="updated-at"></p>
       </div>
@@ -44,6 +51,7 @@
               <th>Rank</th>
               <th>Team</th>
               <th>Cash</th>
+              <th>Shapes Traded</th>
               <th>Accepted</th>
               <th>Rejected</th>
             </tr>
@@ -52,14 +60,14 @@
         </table>
       </div>
     </section>
-
-    <section>
-      <div class="section-header">
-        <h2>Country Cards</h2>
-      </div>
-      <div id="teamCards" class="team-grid"></div>
-    </section>
   </main>
+
+  <div id="winnerReveal" class="winner-reveal hidden">
+    <div class="winner-box">
+      <h2>Winner Reveal</h2>
+      <p id="winnerText"></p>
+    </div>
+  </div>
 
   <div id="pausedOverlay" class="paused-overlay hidden">
     <div class="paused-box">
