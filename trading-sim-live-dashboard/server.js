@@ -23,6 +23,7 @@ const ALLOWED_SHAPE_KINDS = new Set([
   'isosceles_triangle',
   'semi_circle'
 ]);
+const ROUND_SHAPE_ORDER = ['square', 'circle', 'equilateral_triangle', 'isosceles_triangle', 'semi_circle'];
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -56,6 +57,42 @@ function defaultShapes() {
   ];
 }
 
+function pricesFromShapes(shapeList = []) {
+  const prices = {};
+  ROUND_SHAPE_ORDER.forEach((kind) => {
+    const shape = shapeList.find((item) => item.kind === kind);
+    prices[kind] = shape ? Number(shape.price) : 0;
+  });
+  return prices;
+}
+
+function defaultRoundsFromShapes(shapeList = defaultShapes()) {
+  const basePrices = pricesFromShapes(shapeList);
+  return Array.from({ length: 5 }, (_, idx) => ({
+    round: idx + 1,
+    label: `Round ${idx + 1}`,
+    prices: { ...basePrices }
+  }));
+}
+
+function normalizeRound(inputRound = {}, roundNumber, fallbackPrices = {}) {
+  const normalizedRound = Number(roundNumber);
+  const prices = {};
+  ROUND_SHAPE_ORDER.forEach((kind) => {
+    const raw = inputRound && inputRound.prices ? inputRound.prices[kind] : undefined;
+    const fallback = fallbackPrices[kind] ?? 0;
+    const parsed = Number(raw);
+    prices[kind] = Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+  });
+  return {
+    round: normalizedRound,
+    label: typeof inputRound.label === 'string' && inputRound.label.trim()
+      ? inputRound.label.trim()
+      : `Round ${normalizedRound}`,
+    prices
+  };
+}
+
 function defaultState() {
   return {
     meta: {
@@ -63,6 +100,7 @@ function defaultState() {
       subtitle: 'Build shapes, trade smart, and grow your country\'s wealth.',
       roundLabel: 'Round 1',
       announcement: 'Welcome to the trading floor.',
+      currentRound: 1,
       paused: false,
       buzzerCount: 0,
       revealWinner: false,
@@ -71,6 +109,7 @@ function defaultState() {
       updatedAt: nowIso()
     },
     shapes: defaultShapes(),
+    rounds: defaultRoundsFromShapes(defaultShapes()),
     teams: [],
     transactions: []
   };
@@ -195,15 +234,27 @@ function loadState() {
   try {
     const parsed = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'));
     const defaults = defaultState();
+    const shapes = Array.isArray(parsed.shapes) ? parsed.shapes.map(normalizeShape) : defaults.shapes;
+    const fallbackPrices = pricesFromShapes(shapes);
+    const parsedRounds = Array.isArray(parsed.rounds) ? parsed.rounds : [];
+    const rounds = Array.from({ length: 5 }, (_, idx) => normalizeRound(parsedRounds[idx], idx + 1, fallbackPrices));
+    const currentRoundCandidate = Number(parsed.meta && parsed.meta.currentRound);
+    const currentRound = Number.isFinite(currentRoundCandidate) && currentRoundCandidate >= 1 && currentRoundCandidate <= 5
+      ? Math.floor(currentRoundCandidate)
+      : 1;
+
     return {
       ...defaults,
       ...parsed,
       meta: {
         ...defaults.meta,
-        ...(parsed.meta || {})
+        ...(parsed.meta || {}),
+        currentRound,
+        roundLabel: `Round ${currentRound}`
       },
       teams: Array.isArray(parsed.teams) ? parsed.teams.map(normalizeTeam) : [],
-      shapes: Array.isArray(parsed.shapes) ? parsed.shapes.map(normalizeShape) : defaults.shapes,
+      shapes,
+      rounds,
       transactions: Array.isArray(parsed.transactions) ? parsed.transactions : []
     };
   } catch (error) {
@@ -213,6 +264,35 @@ function loadState() {
 }
 
 let state = loadState();
+
+function applyRoundPrices(roundNumber) {
+  const numericRound = Number(roundNumber);
+  const roundConfig = state.rounds.find((item) => item.round === numericRound);
+  if (!roundConfig) return false;
+
+  ROUND_SHAPE_ORDER.forEach((kind) => {
+    const shape = state.shapes.find((item) => item.kind === kind);
+    if (!shape) return;
+    const price = Number(roundConfig.prices[kind]);
+    shape.price = Number.isFinite(price) && price >= 0 ? price : shape.price;
+  });
+
+  state.meta.currentRound = numericRound;
+  state.meta.roundLabel = `Round ${numericRound}`;
+  return true;
+}
+
+function syncActiveRoundFromShapes() {
+  const activeRound = state.rounds.find((item) => item.round === state.meta.currentRound);
+  if (!activeRound) return;
+  ROUND_SHAPE_ORDER.forEach((kind) => {
+    const shape = state.shapes.find((item) => item.kind === kind);
+    if (!shape) return;
+    activeRound.prices[kind] = Number(shape.price) || 0;
+  });
+}
+
+applyRoundPrices(state.meta.currentRound || 1);
 
 function saveState() {
   state.meta.updatedAt = nowIso();
@@ -243,6 +323,7 @@ function publicState() {
   return {
     meta: state.meta,
     shapes: state.shapes,
+    rounds: state.rounds,
     teams: rankedTeams,
     winner
   };
@@ -301,6 +382,51 @@ app.put('/api/admin/meta', requireAdmin, (req, res) => {
   saveState();
   broadcastState();
   res.json({ ok: true, meta: state.meta });
+});
+
+app.put('/api/admin/rounds/:roundNumber/prices', requireAdmin, (req, res) => {
+  const roundNumber = Number(req.params.roundNumber);
+  if (!Number.isFinite(roundNumber) || roundNumber < 1 || roundNumber > 5) {
+    return res.status(400).json({ error: 'roundNumber must be between 1 and 5' });
+  }
+
+  const roundConfig = state.rounds.find((item) => item.round === roundNumber);
+  if (!roundConfig) {
+    return res.status(404).json({ error: 'Round not found' });
+  }
+
+  const inputPrices = (req.body && req.body.prices) || {};
+  ROUND_SHAPE_ORDER.forEach((kind) => {
+    if (inputPrices[kind] === undefined) return;
+    const parsed = Number(inputPrices[kind]);
+    if (Number.isFinite(parsed) && parsed >= 0) {
+      roundConfig.prices[kind] = parsed;
+    }
+  });
+
+  if (state.meta.currentRound === roundNumber) {
+    applyRoundPrices(roundNumber);
+  }
+
+  saveState();
+  broadcastState();
+  res.json({ ok: true, round: roundConfig });
+});
+
+app.post('/api/admin/rounds/:roundNumber/activate', requireAdmin, (req, res) => {
+  const roundNumber = Number(req.params.roundNumber);
+  if (!Number.isFinite(roundNumber) || roundNumber < 1 || roundNumber > 5) {
+    return res.status(400).json({ error: 'roundNumber must be between 1 and 5' });
+  }
+
+  const changed = applyRoundPrices(roundNumber);
+  if (!changed) {
+    return res.status(404).json({ error: 'Round not found' });
+  }
+
+  saveState();
+  broadcastState();
+  res.json({ ok: true, currentRound: roundNumber });
 });
 
 app.post('/api/admin/teams', requireAdmin, (req, res) => {
@@ -475,6 +601,7 @@ app.post('/api/admin/shapes', requireAdmin, (req, res) => {
   };
 
   state.shapes.push(shape);
+  syncActiveRoundFromShapes();
   saveState();
   broadcastState();
   res.status(201).json({ ok: true, shape });
@@ -508,6 +635,7 @@ app.put('/api/admin/shapes/:shapeId', requireAdmin, (req, res) => {
     shape.kind = inferShapeKind(shape.name);
   }
 
+  syncActiveRoundFromShapes();
   saveState();
   broadcastState();
   res.json({ ok: true, shape });
@@ -520,6 +648,7 @@ app.delete('/api/admin/shapes/:shapeId', requireAdmin, (req, res) => {
   }
 
   state.shapes.splice(index, 1);
+  syncActiveRoundFromShapes();
   saveState();
   broadcastState();
   res.json({ ok: true });
@@ -655,13 +784,17 @@ app.post('/api/admin/reset', requireAdmin, (req, res) => {
     : [];
 
   const preservedShapes = keepShapes ? [...state.shapes] : defaultShapes();
+  const preservedRounds = keepShapes ? state.rounds.map((round) => ({ ...round, prices: { ...round.prices } })) : defaultRoundsFromShapes(preservedShapes);
+  const resetRound = keepShapes ? state.meta.currentRound : 1;
 
   state = {
     ...defaultState(),
     teams: preservedTeams,
     shapes: preservedShapes,
+    rounds: preservedRounds,
     transactions: []
   };
+  applyRoundPrices(resetRound);
 
   saveState();
   broadcastState();

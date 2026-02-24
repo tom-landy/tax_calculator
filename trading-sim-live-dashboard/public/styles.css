@@ -414,6 +414,36 @@ button.winner-btn {
   margin-top: 6px;
 }
 
+.round-nav {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.round-active {
+  text-align: center;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.round-buttons {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.round-btn {
+  padding: 10px 8px;
+  background: #334155;
+}
+
+.round-btn.active {
+  background: #0f766e;
+}
+
 .error-text {
   color: var(--danger);
   min-height: 1.2em;

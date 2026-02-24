@@ -9,9 +9,18 @@ const adminStatus = document.getElementById('adminStatus');
 const metaForm = document.getElementById('metaForm');
 const titleInput = document.getElementById('titleInput');
 const subtitleInput = document.getElementById('subtitleInput');
-const roundInput = document.getElementById('roundInput');
 const announcementInput = document.getElementById('announcementInput');
 const pausedInput = document.getElementById('pausedInput');
+const roundButtons = document.getElementById('roundButtons');
+const activeRoundLabel = document.getElementById('activeRoundLabel');
+const prevRoundBtn = document.getElementById('prevRoundBtn');
+const nextRoundBtn = document.getElementById('nextRoundBtn');
+const roundPricesForm = document.getElementById('roundPricesForm');
+const rpSquare = document.getElementById('rp_square');
+const rpCircle = document.getElementById('rp_circle');
+const rpEquilateral = document.getElementById('rp_equilateral_triangle');
+const rpIsosceles = document.getElementById('rp_isosceles_triangle');
+const rpSemiCircle = document.getElementById('rp_semi_circle');
 
 const teamForm = document.getElementById('teamForm');
 const teamNameInput = document.getElementById('teamNameInput');
@@ -61,6 +70,7 @@ if (!adminKey) {
   }
 }
 let latestState = null;
+let selectedRound = 1;
 
 function formatMoney(value) {
   return `$${Number(value || 0).toLocaleString()}`;
@@ -106,9 +116,25 @@ function render(state) {
   latestState = state;
   titleInput.value = state.meta.title || '';
   subtitleInput.value = state.meta.subtitle || '';
-  roundInput.value = state.meta.roundLabel || '';
   announcementInput.value = state.meta.announcement || '';
   pausedInput.checked = Boolean(state.meta.paused);
+  selectedRound = Number(state.meta.currentRound || selectedRound || 1);
+  activeRoundLabel.textContent = `Round ${selectedRound}`;
+
+  const selectedRoundData = (state.rounds || []).find((round) => round.round === selectedRound);
+  if (selectedRoundData) {
+    rpSquare.value = selectedRoundData.prices.square ?? 0;
+    rpCircle.value = selectedRoundData.prices.circle ?? 0;
+    rpEquilateral.value = selectedRoundData.prices.equilateral_triangle ?? 0;
+    rpIsosceles.value = selectedRoundData.prices.isosceles_triangle ?? 0;
+    rpSemiCircle.value = selectedRoundData.prices.semi_circle ?? 0;
+  }
+
+  roundButtons.innerHTML = Array.from({ length: 5 }, (_, idx) => {
+    const roundNum = idx + 1;
+    const activeClass = roundNum === selectedRound ? 'active' : '';
+    return `<button type="button" class="round-btn ${activeClass}" data-round="${roundNum}">Round ${roundNum}</button>`;
+  }).join('');
 
   txTeamSelect.innerHTML = state.teams.map((team) => `<option value="${team.id}">${team.name}</option>`).join('');
   txShapeSelect.innerHTML = state.shapes.map((shape) => `<option value="${shape.id}">${shape.name} (${formatMoney(shape.price)})</option>`).join('');
@@ -285,11 +311,69 @@ metaForm.addEventListener('submit', async (event) => {
     await api('/api/admin/meta', 'PUT', {
       title: titleInput.value,
       subtitle: subtitleInput.value,
-      roundLabel: roundInput.value,
       announcement: announcementInput.value,
       paused: pausedInput.checked
     });
     setStatus('Settings saved');
+  } catch (error) {
+    setStatus(error.message);
+  }
+});
+
+roundButtons.addEventListener('click', async (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return;
+  const roundAttr = target.getAttribute('data-round');
+  if (!roundAttr) return;
+  const roundNumber = Number(roundAttr);
+  if (!Number.isFinite(roundNumber)) return;
+
+  try {
+    await api(`/api/admin/rounds/${roundNumber}/activate`, 'POST');
+    selectedRound = roundNumber;
+    setStatus(`Switched to Round ${roundNumber}`);
+  } catch (error) {
+    setStatus(error.message);
+  }
+});
+
+prevRoundBtn.addEventListener('click', async () => {
+  const nextRound = Math.max(1, selectedRound - 1);
+  if (nextRound === selectedRound) return;
+  try {
+    await api(`/api/admin/rounds/${nextRound}/activate`, 'POST');
+    selectedRound = nextRound;
+    setStatus(`Switched to Round ${nextRound}`);
+  } catch (error) {
+    setStatus(error.message);
+  }
+});
+
+nextRoundBtn.addEventListener('click', async () => {
+  const nextRound = Math.min(5, selectedRound + 1);
+  if (nextRound === selectedRound) return;
+  try {
+    await api(`/api/admin/rounds/${nextRound}/activate`, 'POST');
+    selectedRound = nextRound;
+    setStatus(`Switched to Round ${nextRound}`);
+  } catch (error) {
+    setStatus(error.message);
+  }
+});
+
+roundPricesForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  try {
+    await api(`/api/admin/rounds/${selectedRound}/prices`, 'PUT', {
+      prices: {
+        square: Number(rpSquare.value),
+        circle: Number(rpCircle.value),
+        equilateral_triangle: Number(rpEquilateral.value),
+        isosceles_triangle: Number(rpIsosceles.value),
+        semi_circle: Number(rpSemiCircle.value)
+      }
+    });
+    setStatus(`Saved prices for Round ${selectedRound}`);
   } catch (error) {
     setStatus(error.message);
   }
