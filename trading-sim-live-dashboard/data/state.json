@@ -1,0 +1,66 @@
+{
+  "meta": {
+    "title": "Global Trading Simulation",
+    "subtitle": "Build shapes, trade smart, and grow your country's wealth.",
+    "roundLabel": "Round 1",
+    "announcement": "Welcome to the trading floor.",
+    "paused": false,
+    "buzzerCount": 0,
+    "updatedAt": "2026-02-24T10:18:55.929Z"
+  },
+  "shapes": [
+    {
+      "id": "shape_square",
+      "name": "Square",
+      "price": 50,
+      "color": "#0b3c5d"
+    },
+    {
+      "id": "shape_triangle",
+      "name": "Triangle",
+      "price": 75,
+      "color": "#328cc1"
+    },
+    {
+      "id": "shape_circle",
+      "name": "Circle",
+      "price": 100,
+      "color": "#d9b310"
+    }
+  ],
+  "teams": [
+    {
+      "id": "team_1771928298552_r404hw",
+      "name": "Team 1",
+      "flagUrl": "",
+      "cash": 0,
+      "accepted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "team_1771928302048_3fvwcj",
+      "name": "Team 2",
+      "flagUrl": "",
+      "cash": 0,
+      "accepted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "team_1771928305905_62i8sd",
+      "name": "Team 3",
+      "flagUrl": "",
+      "cash": 0,
+      "accepted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "team_1771928335929_6qbtn2",
+      "name": "beck",
+      "flagUrl": "",
+      "cash": 0,
+      "accepted": 0,
+      "rejected": 0
+    }
+  ],
+  "transactions": []
+}

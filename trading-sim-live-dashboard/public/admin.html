@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Simulation Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="admin-page">
+  <main class="admin-layout">
+    <section id="loginPanel" class="card admin-card">
+      <h1>Admin Login</h1>
+      <p>Use the admin password from your `ADMIN_PASSWORD` environment variable.</p>
+      <form id="loginForm" class="stack-form">
+        <input id="passwordInput" type="password" placeholder="Admin password" required />
+        <button type="submit">Enter Admin Panel</button>
+      </form>
+      <p id="loginError" class="error-text"></p>
+    </section>
+
+    <section id="adminPanel" class="hidden">
+      <header class="admin-header">
+        <h1>Trading Simulation Control Center</h1>
+        <div class="inline-actions">
+          <a class="ghost-button" href="/" target="_blank" rel="noreferrer">Open Public Dashboard</a>
+          <button id="logoutBtn" class="ghost-button">Logout</button>
+        </div>
+      </header>
+
+      <div class="admin-grid">
+        <section class="card admin-card">
+          <h2>Game Settings</h2>
+          <form id="metaForm" class="stack-form">
+            <input id="titleInput" placeholder="Game title" />
+            <input id="subtitleInput" placeholder="Subtitle" />
+            <input id="roundInput" placeholder="Round label (e.g. Round 2)" />
+            <textarea id="announcementInput" rows="3" placeholder="Announcement"></textarea>
+            <label class="checkbox-line">
+              <input id="pausedInput" type="checkbox" /> Pause game (buzzer state)
+            </label>
+            <button type="submit">Save Settings</button>
+          </form>
+          <div class="inline-actions wrap">
+            <button id="buzzerBtn" class="danger">Buzzer: Stop All</button>
+            <button id="resumeBtn" class="success">Resume Trading</button>
+          </div>
+        </section>
+
+        <section class="card admin-card">
+          <h2>Add Team</h2>
+          <form id="teamForm" class="stack-form">
+            <input id="teamNameInput" placeholder="Team / Country name" required />
+            <input id="teamFlagInput" placeholder="Image URL (optional)" />
+            <button type="submit">Add Team</button>
+          </form>
+          <div id="teamList" class="list-stack"></div>
+        </section>
+
+        <section class="card admin-card">
+          <h2>Shape Prices</h2>
+          <form id="shapeForm" class="stack-form">
+            <input id="shapeNameInput" placeholder="Shape name" required />
+            <input id="shapePriceInput" type="number" min="0" step="1" placeholder="Price" required />
+            <input id="shapeColorInput" type="color" value="#1f6f8b" />
+            <button type="submit">Add Shape</button>
+          </form>
+          <div id="shapeList" class="list-stack"></div>
+        </section>
+
+        <section class="card admin-card">
+          <h2>Record Batch Sale</h2>
+          <form id="transactionForm" class="stack-form">
+            <select id="txTeamSelect" required></select>
+            <select id="txShapeSelect" required></select>
+            <input id="txAcceptedInput" type="number" min="0" step="1" value="1" placeholder="Accepted quantity" required />
+            <input id="txRejectedInput" type="number" min="0" step="1" value="0" placeholder="Rejected quantity" required />
+            <input id="txNoteInput" placeholder="Optional note" />
+            <button type="submit">Record Sale</button>
+          </form>
+        </section>
+
+        <section class="card admin-card wide">
+          <h2>Recent Activity</h2>
+          <div id="txList" class="list-stack"></div>
+          <div class="inline-actions wrap">
+            <button id="resetKeepBtn" class="ghost-button">Reset Scores (Keep teams & shapes)</button>
+            <button id="resetAllBtn" class="danger">Reset Everything</button>
+          </div>
+        </section>
+      </div>
+      <p id="adminStatus" class="status-text"></p>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/admin.js"></script>
+</body>
+</html>
