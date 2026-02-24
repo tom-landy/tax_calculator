@@ -1,7 +1,3 @@
-const titleEl = document.getElementById('title');
-const subtitleEl = document.getElementById('subtitle');
-const roundLabelEl = document.getElementById('roundLabel');
-const announcementEl = document.getElementById('announcement');
 const shapesGridEl = document.getElementById('shapesGrid');
 const leaderboardBodyEl = document.getElementById('leaderboardBody');
 const teamCardsEl = document.getElementById('teamCards');
@@ -57,11 +53,6 @@ function shapeSvg(shape) {
 
 function render(state) {
   const { meta, shapes, teams, winner } = state;
-
-  titleEl.textContent = meta.title || 'Trading Simulation';
-  subtitleEl.textContent = meta.subtitle || '';
-  roundLabelEl.textContent = meta.roundLabel || '';
-  announcementEl.textContent = meta.announcement || '';
   updatedAtEl.textContent = meta.updatedAt ? `Updated ${new Date(meta.updatedAt).toLocaleTimeString()}` : '';
   pausedOverlayEl.classList.toggle('hidden', !meta.paused);
 
