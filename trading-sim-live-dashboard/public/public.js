@@ -86,12 +86,18 @@ function render(state) {
       ? `<img class="team-image" src="${team.flagUrl}" alt="${team.name}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" /><div class="team-fallback hidden">${initials(team.name)}</div>`
       : `<div class="team-fallback">${initials(team.name)}</div>`;
 
-    card.innerHTML = `
-      ${imageSection}
-      <h3>${team.name}</h3>
+    const statsMarkup = meta.revealWinner
+      ? `
       <div class="money">${formatMoney(team.cash)}</div>
       <div>Shapes Traded: ${team.traded || 0}</div>
       <div>Accepted: ${team.accepted || 0} | Rejected: ${team.rejected || 0}</div>
+    `
+      : `<div class="list-sub">Performance hidden until winner reveal</div>`;
+
+    card.innerHTML = `
+      ${imageSection}
+      <h3>${team.name}</h3>
+      ${statsMarkup}
     `;
 
     teamCardsEl.appendChild(card);
