@@ -217,6 +217,7 @@ function candidateTeamName(row = {}) {
 
 function candidateFlagUrl(row = {}) {
   return String(
+    row.flagUrl ||
     row.flagurl ||
     row.flag_url ||
     row.flag ||
