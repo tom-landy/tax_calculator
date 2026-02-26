@@ -188,6 +188,19 @@ h3 {
   height: 92%;
 }
 
+.shape-image {
+  width: 92%;
+  height: 92%;
+  object-fit: contain;
+}
+
+.shape-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
 .shape-card .price {
   font-size: 2.4rem;
   font-weight: 700;

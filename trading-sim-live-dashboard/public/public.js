@@ -52,6 +52,16 @@ function shapeSvg(shape) {
   return `<svg viewBox="0 0 100 100" class="shape-svg"><rect x="24" y="24" width="52" height="52" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
 }
 
+function shapeImagePath(shape) {
+  const key = shapeKey(shape);
+  if (key === 'square') return '/images/square.png';
+  if (key === 'circle') return '/images/circle.png';
+  if (key === 'equilateral_triangle') return '/images/etriangle.png';
+  if (key === 'isosceles_triangle') return '/images/itriangle.png';
+  if (key === 'semi_circle') return '/images/semi.png';
+  return '';
+}
+
 function render(state) {
   const { meta, shapes, teams, winner } = state;
   updatedAtEl.textContent = meta.updatedAt ? `Updated ${new Date(meta.updatedAt).toLocaleTimeString()}` : '';
@@ -68,11 +78,15 @@ function render(state) {
 
   shapesGridEl.innerHTML = '';
   shapes.forEach((shape) => {
+    const imagePath = shapeImagePath(shape);
     const card = document.createElement('article');
     card.className = 'shape-card';
     card.style.background = shape.color || '#1f6f8b';
     card.innerHTML = `
-      <div class="shape-art">${shapeSvg(shape)}</div>
+      <div class="shape-art">
+        <img class="shape-image" src="${imagePath}" alt="${shape.name}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
+        <div class="shape-fallback hidden">${shapeSvg(shape)}</div>
+      </div>
       <h3>${shape.name}</h3>
       <div class="price">${formatMoney(shape.price)}</div>
     `;
