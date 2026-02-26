@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UK Take-Home Pay Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="card controls">
+        <h1>UK Take-Home Pay</h1>
+        <p class="subtitle">Estimate your net pay and tax for the 2025/26 tax year.</p>
+
+        <label for="salary">Annual Salary (£)</label>
+        <input id="salary" type="number" min="0" step="100" value="35000" />
+
+        <label for="taxCodePreset">Tax Code</label>
+        <select id="taxCodePreset">
+          <option value="1257L">1257L (standard)</option>
+          <option value="BR">BR (basic rate only)</option>
+          <option value="D0">D0 (higher rate only)</option>
+          <option value="D1">D1 (additional rate only)</option>
+          <option value="NT">NT (no tax)</option>
+          <option value="S1257L">S1257L (Scotland standard)</option>
+          <option value="SBR">SBR (Scotland basic only)</option>
+          <option value="SD0">SD0 (Scotland intermediate only)</option>
+          <option value="SD1">SD1 (Scotland higher only)</option>
+          <option value="custom">Custom code...</option>
+        </select>
+
+        <label for="taxCode">Or Type Any Tax Code</label>
+        <input id="taxCode" type="text" value="1257L" placeholder="e.g. 1257L, K250, S1257L" />
+
+        <label for="country">Tax Region</label>
+        <select id="country">
+          <option value="rUK">England / Wales / N. Ireland</option>
+          <option value="scotland">Scotland</option>
+        </select>
+
+        <button id="calculateBtn" type="button">Calculate</button>
+
+        <p class="fine-print">
+          NI is estimated for employee Class 1, category A. Tax codes can override allowances/rates.
+        </p>
+      </section>
+
+      <section class="card output">
+        <h2>Results</h2>
+        <div class="grid" id="payGrid">
+          <article>
+            <h3>Take-Home / Year</h3>
+            <p id="netYear">£0.00</p>
+          </article>
+          <article>
+            <h3>Take-Home / Month</h3>
+            <p id="netMonth">£0.00</p>
+          </article>
+          <article>
+            <h3>Take-Home / Week</h3>
+            <p id="netWeek">£0.00</p>
+          </article>
+          <article>
+            <h3>Take-Home / Day</h3>
+            <p id="netDay">£0.00</p>
+          </article>
+        </div>
+
+        <div class="breakdown">
+          <p><span>Gross Salary</span><strong id="grossAnnual">£0.00</strong></p>
+          <p><span>Income Tax</span><strong id="incomeTax">£0.00</strong></p>
+          <p><span>National Insurance</span><strong id="ni">£0.00</strong></p>
+          <p><span>Total Deductions</span><strong id="deductions">£0.00</strong></p>
+          <p><span>Effective Tax + NI Rate</span><strong id="effectiveRate">0.00%</strong></p>
+        </div>
+
+        <p class="note" id="calcNote"></p>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
