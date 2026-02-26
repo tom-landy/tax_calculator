@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="team-page">
+  <main class="team-layout">
+    <section id="teamLogin" class="card admin-card">
+      <h1>Team Portal Login</h1>
+      <p>Enter your team PIN to access your account.</p>
+      <form id="teamLoginForm" class="stack-form">
+        <input id="teamPinInput" type="password" placeholder="Team PIN" required />
+        <button type="submit">Open Team Portal</button>
+      </form>
+      <p id="teamLoginError" class="error-text"></p>
+    </section>
+
+    <section id="teamPanel" class="hidden">
+      <header class="team-header card admin-card">
+        <h1 id="teamName">Team</h1>
+        <div id="teamRound" class="round-active"></div>
+      </header>
+
+      <section class="team-metrics">
+        <article class="card admin-card">
+          <h2>Bank Balance</h2>
+          <div id="teamBalance" class="team-balance">$0</div>
+        </article>
+        <article class="card admin-card">
+          <h2>Current Assets</h2>
+          <p id="teamAssets" class="list-sub"></p>
+        </article>
+      </section>
+
+      <section class="card admin-card">
+        <h2>Account Actions</h2>
+        <form id="teamTxForm" class="stack-form">
+          <select id="teamAction" required>
+            <option value="deposit">Deposit</option>
+            <option value="withdraw">Withdraw</option>
+          </select>
+          <input id="teamAmount" type="number" min="1" step="1" value="10" required />
+          <input id="teamNote" placeholder="Optional note" />
+          <button type="submit">Submit Transaction</button>
+        </form>
+        <p id="teamStatus" class="status-text"></p>
+      </section>
+    </section>
+  </main>
+
+  <script src="/team.js"></script>
+</body>
+</html>

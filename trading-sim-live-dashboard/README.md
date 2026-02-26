@@ -14,6 +14,7 @@ A real-time classroom trading game dashboard with two interfaces:
 - Price changes reflected immediately.
 - Buzzer stop/resume controls.
 - Team bulk import from `.csv`, `.xls`, or `.xlsx` in admin.
+- Team portal mode for iPads: tap team card, login with team PIN, view assets and deposit/withdraw.
 - Data persisted in `data/state.json`.
 
 ## Local Run
@@ -53,3 +54,4 @@ This project includes `render.yaml`.
 - Admin auth is a simple shared password sent in request headers. For school use this is usually enough, but do not share the admin URL/password with students.
 - If `ADMIN_PASSWORD` is not set, the app fallback password is `Alpha1234*`.
 - Team import columns: use `name` or `team` (required), and optionally `flagUrl`/`flag`/`image`.
+- Team PINs can be set manually when creating/editing teams, or auto-generated if left blank.

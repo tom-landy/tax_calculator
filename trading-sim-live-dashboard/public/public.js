@@ -83,6 +83,11 @@ function render(state) {
   teams.forEach((team) => {
     const card = document.createElement('article');
     card.className = 'team-card';
+    card.style.cursor = 'pointer';
+    card.setAttribute('title', `Open ${team.name} portal`);
+    card.addEventListener('click', () => {
+      window.open(`/team/${team.id}`, '_blank', 'noopener,noreferrer');
+    });
 
     const imageSection = team.flagUrl
       ? `<img class="team-image" src="${team.flagUrl}" alt="${team.name}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" /><div class="team-fallback hidden">${initials(team.name)}</div>`
@@ -100,6 +105,7 @@ function render(state) {
       ${imageSection}
       <h3>${team.name}</h3>
       ${statsMarkup}
+      <div class="list-sub">Tap card to open team portal</div>
     `;
 
     teamCardsEl.appendChild(card);

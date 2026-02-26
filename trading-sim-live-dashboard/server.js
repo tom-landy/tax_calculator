@@ -36,6 +36,10 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function generateTeamPin() {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
 function inferShapeKind(name = '') {
   const normalized = String(name).toLowerCase().replace(/\s+/g, '_');
   if (normalized.includes('square')) return 'square';
@@ -122,10 +126,12 @@ function ensureDataDir() {
 }
 
 function normalizeTeam(team = {}) {
+  const candidatePin = String(team.pin || '').trim();
   return {
     id: team.id || makeId('team'),
     name: typeof team.name === 'string' ? team.name : 'Team',
     flagUrl: typeof team.flagUrl === 'string' ? team.flagUrl : '',
+    pin: candidatePin || generateTeamPin(),
     cash: Number.isFinite(Number(team.cash)) ? Number(team.cash) : 0,
     accepted: Number.isFinite(Number(team.accepted)) ? Number(team.accepted) : 0,
     rejected: Number.isFinite(Number(team.rejected)) ? Number(team.rejected) : 0,
@@ -309,8 +315,14 @@ function rankTeams(teams) {
     .map((team, index) => ({ ...team, rank: index + 1 }));
 }
 
+function stripTeamPin(team) {
+  const { pin, ...rest } = team;
+  return rest;
+}
+
 function publicState() {
   const rankedTeams = rankTeams(state.teams);
+  const safeTeams = rankedTeams.map(stripTeamPin);
   const winner = state.meta.revealWinner && rankedTeams.length
     ? {
         id: rankedTeams[0].id,
@@ -324,14 +336,16 @@ function publicState() {
     meta: state.meta,
     shapes: state.shapes,
     rounds: state.rounds,
-    teams: rankedTeams,
+    teams: safeTeams,
     winner
   };
 }
 
 function adminState() {
+  const rankedTeams = rankTeams(state.teams);
   return {
     ...publicState(),
+    teams: rankedTeams,
     transactions: [...state.transactions].sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 100)
   };
 }
@@ -349,12 +363,91 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+function teamState(team) {
+  return {
+    id: team.id,
+    name: team.name,
+    flagUrl: team.flagUrl || '',
+    bankBalance: team.cash || 0,
+    assets: {
+      shapesTraded: team.traded || 0,
+      accepted: team.accepted || 0,
+      rejected: team.rejected || 0
+    },
+    meta: {
+      currentRound: state.meta.currentRound,
+      roundLabel: state.meta.roundLabel,
+      paused: state.meta.paused
+    }
+  };
+}
+
+function requireTeamPin(req, res, next) {
+  const teamId = req.params.teamId || req.body.teamId || req.header('x-team-id');
+  const pin = String(req.header('x-team-pin') || (req.body && req.body.pin) || '').trim();
+  if (!teamId) return res.status(400).json({ error: 'teamId is required' });
+  const team = state.teams.find((item) => item.id === teamId);
+  if (!team) return res.status(404).json({ error: 'Team not found' });
+  if (!pin || pin !== String(team.pin || '')) return res.status(401).json({ error: 'Invalid PIN' });
+  req.team = team;
+  next();
+}
+
 app.get('/health', (req, res) => {
   res.json({ ok: true, updatedAt: state.meta.updatedAt });
 });
 
 app.get('/api/state', (req, res) => {
   res.json(publicState());
+});
+
+app.post('/api/team/login', (req, res) => {
+  const teamId = req.body && req.body.teamId;
+  const pin = String((req.body && req.body.pin) || '').trim();
+  const team = state.teams.find((item) => item.id === teamId);
+  if (!team) return res.status(404).json({ error: 'Team not found' });
+  if (!pin || pin !== String(team.pin || '')) {
+    return res.status(401).json({ error: 'Invalid PIN' });
+  }
+  res.json({ ok: true, team: teamState(team) });
+});
+
+app.get('/api/team/:teamId/state', requireTeamPin, (req, res) => {
+  res.json({ ok: true, team: teamState(req.team) });
+});
+
+app.post('/api/team/:teamId/transaction', requireTeamPin, (req, res) => {
+  const action = String((req.body && req.body.action) || '').trim().toLowerCase();
+  const amount = Number(req.body && req.body.amount);
+  const note = typeof (req.body && req.body.note) === 'string' ? req.body.note.trim() : '';
+
+  if (!['deposit', 'withdraw'].includes(action)) {
+    return res.status(400).json({ error: 'action must be deposit or withdraw' });
+  }
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return res.status(400).json({ error: 'amount must be a positive number' });
+  }
+
+  const signedAmount = action === 'deposit' ? amount : -amount;
+  const nextBalance = (req.team.cash || 0) + signedAmount;
+  if (nextBalance < 0) {
+    return res.status(400).json({ error: 'Insufficient balance' });
+  }
+
+  req.team.cash = nextBalance;
+  state.transactions.push({
+    id: makeId('txn'),
+    timestamp: nowIso(),
+    type: action === 'deposit' ? 'team_portal_deposit' : 'team_portal_withdraw',
+    teamId: req.team.id,
+    teamName: req.team.name,
+    amount: signedAmount,
+    note: note || 'Team portal transaction'
+  });
+
+  saveState();
+  broadcastState();
+  res.json({ ok: true, team: teamState(req.team) });
 });
 
 app.post('/api/admin/login', (req, res) => {
@@ -367,6 +460,51 @@ app.post('/api/admin/login', (req, res) => {
 
 app.get('/api/admin/state', requireAdmin, (req, res) => {
   res.json(adminState());
+});
+
+app.get('/api/admin/export/results.xlsx', requireAdmin, (req, res) => {
+  const ranked = rankTeams(state.teams);
+  const teamsSheet = ranked.map((team) => ({
+    Rank: team.rank,
+    Team: team.name,
+    Cash: team.cash,
+    ShapesTraded: team.traded || 0,
+    Accepted: team.accepted || 0,
+    Rejected: team.rejected || 0
+  }));
+
+  const txSheet = [...state.transactions].map((txn) => ({
+    Timestamp: txn.timestamp || '',
+    Type: txn.type || '',
+    Team: txn.teamName || '',
+    Shape: txn.shapeName || '',
+    QuantityAccepted: txn.quantityAccepted ?? '',
+    QuantityRejected: txn.quantityRejected ?? '',
+    QuantityTraded: txn.quantityTraded ?? '',
+    UnitPrice: txn.unitPrice ?? '',
+    Total: txn.total ?? '',
+    Note: txn.note || ''
+  }));
+
+  const roundsSheet = (state.rounds || []).map((round) => ({
+    Round: round.round,
+    Label: round.label,
+    Square: round.prices && round.prices.square,
+    Circle: round.prices && round.prices.circle,
+    EquilateralTriangle: round.prices && round.prices.equilateral_triangle,
+    IsoscelesTriangle: round.prices && round.prices.isosceles_triangle,
+    SemiCircle: round.prices && round.prices.semi_circle
+  }));
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(teamsSheet), 'Teams');
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(txSheet), 'Transactions');
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(roundsSheet), 'Rounds');
+
+  const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename=\"trading-sim-results-${new Date().toISOString().slice(0, 10)}.xlsx\"`);
+  res.send(buffer);
 });
 
 app.put('/api/admin/meta', requireAdmin, (req, res) => {
@@ -430,7 +568,7 @@ app.post('/api/admin/rounds/:roundNumber/activate', requireAdmin, (req, res) => 
 });
 
 app.post('/api/admin/teams', requireAdmin, (req, res) => {
-  const { name, flagUrl } = req.body || {};
+  const { name, flagUrl, pin } = req.body || {};
   if (!name || typeof name !== 'string') {
     return res.status(400).json({ error: 'Team name is required' });
   }
@@ -438,6 +576,7 @@ app.post('/api/admin/teams', requireAdmin, (req, res) => {
     id: makeId('team'),
     name: name.trim(),
     flagUrl: typeof flagUrl === 'string' ? flagUrl.trim() : '',
+    pin: String(pin || '').trim() || generateTeamPin(),
     cash: 0,
     accepted: 0,
     rejected: 0,
@@ -492,6 +631,7 @@ app.post('/api/admin/teams/import', requireAdmin, upload.single('file'), (req, r
       id: makeId('team'),
       name,
       flagUrl: candidateFlagUrl(row),
+      pin: String(row.pin || row.PIN || '').trim() || generateTeamPin(),
       cash: 0,
       accepted: 0,
       rejected: 0,
@@ -521,13 +661,19 @@ app.put('/api/admin/teams/:teamId', requireAdmin, (req, res) => {
     return res.status(404).json({ error: 'Team not found' });
   }
 
-  const { name, flagUrl } = req.body || {};
+  const { name, flagUrl, pin } = req.body || {};
   if (typeof name === 'string') {
     const trimmed = name.trim();
     if (trimmed) team.name = trimmed;
   }
   if (typeof flagUrl === 'string') {
     team.flagUrl = flagUrl.trim();
+  }
+  if (pin !== undefined) {
+    const normalizedPin = String(pin).trim();
+    if (normalizedPin) {
+      team.pin = normalizedPin;
+    }
   }
 
   saveState();
@@ -807,6 +953,10 @@ app.get('/', (req, res) => {
 
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/team/:teamId', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'team.html'));
 });
 
 io.on('connection', (socket) => {

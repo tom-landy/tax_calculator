@@ -25,6 +25,7 @@ const rpSemiCircle = document.getElementById('rp_semi_circle');
 const teamForm = document.getElementById('teamForm');
 const teamNameInput = document.getElementById('teamNameInput');
 const teamFlagInput = document.getElementById('teamFlagInput');
+const teamPinInput = document.getElementById('teamPinInput');
 const teamImportForm = document.getElementById('teamImportForm');
 const teamImportFile = document.getElementById('teamImportFile');
 const teamList = document.getElementById('teamList');
@@ -124,7 +125,7 @@ function render(state) {
         <strong>${team.name}</strong>
         <span>${formatMoney(team.cash)}</span>
       </div>
-      <div class="list-sub">Shapes Traded: ${team.traded || 0} | Accepted: ${team.accepted || 0} | Rejected: ${team.rejected || 0}</div>
+      <div class="list-sub">PIN: ${team.pin || 'Not set'}</div>
       <div class="inline-actions wrap" style="margin-top:8px;">
         <input data-team-cash-input="${team.id}" type="number" min="0" step="1" value="10" style="max-width:120px;" />
         <button data-action="add-cash" data-id="${team.id}">Add Cash</button>
@@ -175,7 +176,9 @@ teamList.addEventListener('click', async (event) => {
       if (name === null) return;
       const flagUrl = window.prompt('Image URL (optional)', current.flagUrl || '');
       if (flagUrl === null) return;
-      await api(`/api/admin/teams/${id}`, 'PUT', { name, flagUrl });
+      const pin = window.prompt('Team PIN', current.pin || '');
+      if (pin === null) return;
+      await api(`/api/admin/teams/${id}`, 'PUT', { name, flagUrl, pin });
       setStatus('Team updated');
     }
 
@@ -310,10 +313,12 @@ teamForm.addEventListener('submit', async (event) => {
   try {
     await api('/api/admin/teams', 'POST', {
       name: teamNameInput.value,
-      flagUrl: teamFlagInput.value
+      flagUrl: teamFlagInput.value,
+      pin: teamPinInput.value
     });
     teamNameInput.value = '';
     teamFlagInput.value = '';
+    teamPinInput.value = '';
     setStatus('Team added');
   } catch (error) {
     setStatus(error.message);
