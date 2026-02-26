@@ -10,6 +10,7 @@ const teamNameEl = document.getElementById('teamName');
 const teamRoundEl = document.getElementById('teamRound');
 const teamBalanceEl = document.getElementById('teamBalance');
 const teamAssetsEl = document.getElementById('teamAssets');
+const teamRequestsList = document.getElementById('teamRequestsList');
 
 const teamTxForm = document.getElementById('teamTxForm');
 const teamActionEl = document.getElementById('teamAction');
@@ -33,6 +34,26 @@ function renderTeam(team) {
   teamRoundEl.textContent = team.meta.roundLabel;
   teamBalanceEl.textContent = formatMoney(team.bankBalance);
   teamAssetsEl.textContent = `Shapes traded: ${team.assets.shapesTraded} | Accepted: ${team.assets.accepted} | Rejected: ${team.assets.rejected}`;
+  teamRequestsList.innerHTML = '';
+  const requests = Array.isArray(team.requests) ? team.requests : [];
+  if (!requests.length) {
+    teamRequestsList.innerHTML = '<article class=\"list-item\"><div class=\"list-sub\">No requests yet</div></article>';
+    return;
+  }
+
+  requests.forEach((request) => {
+    const card = document.createElement('article');
+    card.className = 'list-item';
+    const status = String(request.status || '').toUpperCase();
+    card.innerHTML = `
+      <div class=\"list-head\">
+        <strong>${request.action.toUpperCase()} ${formatMoney(request.amount)}</strong>
+        <span>${status}</span>
+      </div>
+      <div class=\"list-sub\">Requested: ${request.requestedAt ? new Date(request.requestedAt).toLocaleTimeString() : ''}</div>
+    `;
+    teamRequestsList.appendChild(card);
+  });
 }
 
 async function login(pin) {
@@ -103,7 +124,7 @@ teamTxForm.addEventListener('submit', async (event) => {
     const team = await submitTransaction(action, amount, note);
     renderTeam(team);
     teamNoteEl.value = '';
-    teamStatusEl.textContent = `${action === 'deposit' ? 'Deposit' : 'Withdrawal'} complete`;
+    teamStatusEl.textContent = `${action === 'deposit' ? 'Deposit' : 'Withdrawal'} request submitted for banker approval`;
   } catch (error) {
     teamStatusEl.textContent = error.message;
   }

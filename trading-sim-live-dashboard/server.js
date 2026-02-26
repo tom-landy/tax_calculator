@@ -12,6 +12,7 @@ const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Alpha1234*';
+const BANKER_PASSWORD = process.env.BANKER_PASSWORD || 'Banker1234*';
 const DATA_DIR = path.join(__dirname, 'data');
 const STATE_PATH = path.join(DATA_DIR, 'state.json');
 const upload = multer({ storage: multer.memoryStorage() });
@@ -115,6 +116,7 @@ function defaultState() {
     shapes: defaultShapes(),
     rounds: defaultRoundsFromShapes(defaultShapes()),
     teams: [],
+    bankerRequests: [],
     transactions: []
   };
 }
@@ -262,6 +264,7 @@ function loadState() {
       teams: Array.isArray(parsed.teams) ? parsed.teams.map(normalizeTeam) : [],
       shapes,
       rounds,
+      bankerRequests: Array.isArray(parsed.bankerRequests) ? parsed.bankerRequests : [],
       transactions: Array.isArray(parsed.transactions) ? parsed.transactions : []
     };
   } catch (error) {
@@ -364,7 +367,20 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+function requireBanker(req, res, next) {
+  const provided = req.header('x-banker-key');
+  if (!provided || provided !== BANKER_PASSWORD) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
 function teamState(team) {
+  const requests = state.bankerRequests
+    .filter((item) => item.teamId === team.id)
+    .sort((a, b) => String(b.requestedAt || '').localeCompare(String(a.requestedAt || '')))
+    .slice(0, 20);
+
   return {
     id: team.id,
     name: team.name,
@@ -375,6 +391,7 @@ function teamState(team) {
       accepted: team.accepted || 0,
       rejected: team.rejected || 0
     },
+    requests,
     meta: {
       currentRound: state.meta.currentRound,
       roundLabel: state.meta.roundLabel,
@@ -430,25 +447,33 @@ app.post('/api/team/:teamId/transaction', requireTeamPin, (req, res) => {
   }
 
   const signedAmount = action === 'deposit' ? amount : -amount;
-  const nextBalance = (req.team.cash || 0) + signedAmount;
-  if (nextBalance < 0) {
-    return res.status(400).json({ error: 'Insufficient balance' });
-  }
+  const request = {
+    id: makeId('req'),
+    teamId: req.team.id,
+    teamName: req.team.name,
+    action,
+    amount,
+    note: note || '',
+    status: 'pending',
+    requestedAt: nowIso(),
+    decidedAt: '',
+    decidedBy: ''
+  };
+  state.bankerRequests.push(request);
 
-  req.team.cash = nextBalance;
   state.transactions.push({
     id: makeId('txn'),
     timestamp: nowIso(),
-    type: action === 'deposit' ? 'team_portal_deposit' : 'team_portal_withdraw',
+    type: 'team_portal_request_created',
     teamId: req.team.id,
     teamName: req.team.name,
     amount: signedAmount,
-    note: note || 'Team portal transaction'
+    note: note || `Request ${action}`
   });
 
   saveState();
   broadcastState();
-  res.json({ ok: true, team: teamState(req.team) });
+  res.json({ ok: true, request, team: teamState(req.team) });
 });
 
 app.post('/api/admin/login', (req, res) => {
@@ -457,6 +482,86 @@ app.post('/api/admin/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid password' });
   }
   res.json({ ok: true });
+});
+
+app.post('/api/banker/login', (req, res) => {
+  const password = (req.body && req.body.password) || '';
+  if (password !== BANKER_PASSWORD) {
+    return res.status(401).json({ error: 'Invalid password' });
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/banker/state', requireBanker, (req, res) => {
+  const pending = state.bankerRequests
+    .filter((item) => item.status === 'pending')
+    .sort((a, b) => String(a.requestedAt || '').localeCompare(String(b.requestedAt || '')));
+
+  const recent = state.bankerRequests
+    .filter((item) => item.status !== 'pending')
+    .sort((a, b) => String(b.decidedAt || '').localeCompare(String(a.decidedAt || '')))
+    .slice(0, 50);
+
+  res.json({ ok: true, pending, recent });
+});
+
+app.post('/api/banker/requests/:requestId/approve', requireBanker, (req, res) => {
+  const request = state.bankerRequests.find((item) => item.id === req.params.requestId);
+  if (!request) {
+    return res.status(404).json({ error: 'Request not found' });
+  }
+  if (request.status !== 'pending') {
+    return res.status(400).json({ error: 'Request already processed' });
+  }
+
+  const team = state.teams.find((item) => item.id === request.teamId);
+  if (!team) {
+    return res.status(404).json({ error: 'Team not found' });
+  }
+
+  const signedAmount = request.action === 'deposit' ? Number(request.amount) : -Number(request.amount);
+  const newBalance = Number(team.cash || 0) + signedAmount;
+  if (newBalance < 0) {
+    return res.status(400).json({ error: 'Insufficient team balance for withdrawal' });
+  }
+
+  team.cash = newBalance;
+  request.status = 'approved';
+  request.decidedAt = nowIso();
+  request.decidedBy = 'banker';
+
+  state.transactions.push({
+    id: makeId('txn'),
+    timestamp: nowIso(),
+    type: request.action === 'deposit' ? 'team_portal_deposit_approved' : 'team_portal_withdraw_approved',
+    teamId: team.id,
+    teamName: team.name,
+    amount: signedAmount,
+    note: request.note || ''
+  });
+
+  saveState();
+  broadcastState();
+  res.json({ ok: true, request });
+});
+
+app.post('/api/banker/requests/:requestId/reject', requireBanker, (req, res) => {
+  const request = state.bankerRequests.find((item) => item.id === req.params.requestId);
+  if (!request) {
+    return res.status(404).json({ error: 'Request not found' });
+  }
+  if (request.status !== 'pending') {
+    return res.status(400).json({ error: 'Request already processed' });
+  }
+
+  request.status = 'rejected';
+  request.decidedAt = nowIso();
+  request.decidedBy = 'banker';
+  request.rejectionReason = typeof (req.body && req.body.reason) === 'string' ? req.body.reason.trim() : '';
+
+  saveState();
+  broadcastState();
+  res.json({ ok: true, request });
 });
 
 app.get('/api/admin/state', requireAdmin, (req, res) => {
@@ -954,6 +1059,10 @@ app.get('/', (req, res) => {
 
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/banker', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'banker.html'));
 });
 
 app.get('/team/:teamId', (req, res) => {

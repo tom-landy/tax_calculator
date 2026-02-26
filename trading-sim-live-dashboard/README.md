@@ -15,6 +15,7 @@ A real-time classroom trading game dashboard with two interfaces:
 - Buzzer stop/resume controls.
 - Team bulk import from `.csv`, `.xls`, or `.xlsx` in admin.
 - Team portal mode for iPads: tap team card, login with team PIN, view assets and deposit/withdraw.
+- Banker approval panel (`/banker`) for approving/rejecting team deposit/withdraw requests.
 - Data persisted in `data/state.json`.
 
 ## Local Run
@@ -55,3 +56,4 @@ This project includes `render.yaml`.
 - If `ADMIN_PASSWORD` is not set, the app fallback password is `Alpha1234*`.
 - Team import columns: use `name` or `team` (required), and optionally `flagUrl`/`flag`/`image`.
 - Team PINs can be set manually when creating/editing teams, or auto-generated if left blank.
+- Banker login uses `BANKER_PASSWORD` (fallback: `Banker1234*`).
