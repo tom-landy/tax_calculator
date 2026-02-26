@@ -4,3 +4,4 @@ node_modules
 npm-debug.log*
 .server.pid
 server.log
+data/state.json

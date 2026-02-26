@@ -13,8 +13,10 @@ const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Alpha1234*';
 const BANKER_PASSWORD = process.env.BANKER_PASSWORD || 'Banker1234*';
-const DATA_DIR = path.join(__dirname, 'data');
-const STATE_PATH = path.join(DATA_DIR, 'state.json');
+const DEFAULT_DATA_DIR = path.join(__dirname, 'data');
+const DATA_ROOT = process.env.RENDER_DISK_PATH || process.env.DATA_DIR || DEFAULT_DATA_DIR;
+const STATE_PATH = process.env.STATE_PATH || path.join(DATA_ROOT, 'state.json');
+const DATA_DIR = path.dirname(STATE_PATH);
 const upload = multer({ storage: multer.memoryStorage() });
 
 const ALLOWED_SHAPE_KINDS = new Set([
