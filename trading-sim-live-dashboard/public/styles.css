@@ -469,6 +469,28 @@ button.winner-btn {
   gap: 14px;
 }
 
+.countries-layout {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.countries-grid {
+  margin-top: 10px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.countries-team-card {
+  min-height: 280px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
 .team-header {
   display: flex;
   justify-content: space-between;
@@ -519,6 +541,10 @@ button.winner-btn {
   }
 
   .team-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .countries-grid {
     grid-template-columns: 1fr;
   }
 }

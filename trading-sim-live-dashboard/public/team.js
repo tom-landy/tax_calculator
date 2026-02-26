@@ -17,6 +17,7 @@ const teamActionEl = document.getElementById('teamAction');
 const teamAmountEl = document.getElementById('teamAmount');
 const teamNoteEl = document.getElementById('teamNote');
 const teamStatusEl = document.getElementById('teamStatus');
+const teamLogoutBtn = document.getElementById('teamLogoutBtn');
 
 let teamPin = sessionStorage.getItem(`team-pin-${teamId}`) || '';
 const socket = io();
@@ -129,6 +130,11 @@ teamTxForm.addEventListener('submit', async (event) => {
   } catch (error) {
     teamStatusEl.textContent = error.message;
   }
+});
+
+teamLogoutBtn.addEventListener('click', () => {
+  sessionStorage.removeItem(`team-pin-${teamId}`);
+  window.location.href = '/countries';
 });
 
 if (teamPin) {

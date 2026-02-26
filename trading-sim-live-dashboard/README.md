@@ -15,6 +15,7 @@ A real-time classroom trading game dashboard with two interfaces:
 - Buzzer stop/resume controls.
 - Team bulk import from `.csv`, `.xls`, or `.xlsx` in admin.
 - Team portal mode for iPads: tap team card, login with team PIN, view assets and deposit/withdraw.
+- Dedicated country cards screen for iPads at `/countries`.
 - Banker approval panel (`/banker`) for approving/rejecting team deposit/withdraw requests.
 - Data persisted in `data/state.json`.
 

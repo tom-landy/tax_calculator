@@ -1063,6 +1063,10 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+app.get('/countries', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'countries.html'));
+});
+
 app.get('/banker', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'banker.html'));
 });
