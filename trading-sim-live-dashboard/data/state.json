@@ -4,12 +4,13 @@
     "subtitle": "Build shapes, trade smart, and grow your country's wealth.",
     "roundLabel": "Round 1",
     "announcement": "Welcome to the trading floor.",
+    "currentRound": 1,
     "paused": false,
     "buzzerCount": 0,
     "revealWinner": false,
     "winnerTeamId": "",
     "winnerName": "",
-    "updatedAt": "2026-02-24T12:44:23.595Z"
+    "updatedAt": "2026-02-26T00:00:00.000Z"
   },
   "shapes": [
     {
@@ -48,6 +49,64 @@
       "color": "#7c3aed"
     }
   ],
+  "rounds": [
+    {
+      "round": 1,
+      "label": "Round 1",
+      "prices": {
+        "square": 50,
+        "circle": 70,
+        "equilateral_triangle": 90,
+        "isosceles_triangle": 85,
+        "semi_circle": 65
+      }
+    },
+    {
+      "round": 2,
+      "label": "Round 2",
+      "prices": {
+        "square": 50,
+        "circle": 70,
+        "equilateral_triangle": 90,
+        "isosceles_triangle": 85,
+        "semi_circle": 65
+      }
+    },
+    {
+      "round": 3,
+      "label": "Round 3",
+      "prices": {
+        "square": 50,
+        "circle": 70,
+        "equilateral_triangle": 90,
+        "isosceles_triangle": 85,
+        "semi_circle": 65
+      }
+    },
+    {
+      "round": 4,
+      "label": "Round 4",
+      "prices": {
+        "square": 50,
+        "circle": 70,
+        "equilateral_triangle": 90,
+        "isosceles_triangle": 85,
+        "semi_circle": 65
+      }
+    },
+    {
+      "round": 5,
+      "label": "Round 5",
+      "prices": {
+        "square": 50,
+        "circle": 70,
+        "equilateral_triangle": 90,
+        "isosceles_triangle": 85,
+        "semi_circle": 65
+      }
+    }
+  ],
   "teams": [],
+  "bankerRequests": [],
   "transactions": []
 }
