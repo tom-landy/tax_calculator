@@ -357,6 +357,8 @@ function adminState() {
 function broadcastState() {
   io.emit('state:update', publicState());
   io.emit('admin:update', adminState());
+  io.emit('banker:update', { updatedAt: nowIso() });
+  io.emit('team:update', { updatedAt: nowIso() });
 }
 
 function requireAdmin(req, res, next) {

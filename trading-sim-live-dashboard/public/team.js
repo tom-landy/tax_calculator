@@ -19,6 +19,7 @@ const teamNoteEl = document.getElementById('teamNote');
 const teamStatusEl = document.getElementById('teamStatus');
 
 let teamPin = sessionStorage.getItem(`team-pin-${teamId}`) || '';
+const socket = io();
 
 function formatMoney(value) {
   return `$${Number(value || 0).toLocaleString()}`;
@@ -144,3 +145,12 @@ if (teamPin) {
 } else {
   setLoggedIn(false);
 }
+
+socket.on('team:update', () => {
+  if (!teamPin) return;
+  fetchTeamState()
+    .then((team) => {
+      renderTeam(team);
+    })
+    .catch(() => {});
+});

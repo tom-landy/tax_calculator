@@ -10,6 +10,7 @@ const bankerRefreshBtn = document.getElementById('bankerRefreshBtn');
 const bankerLogoutBtn = document.getElementById('bankerLogoutBtn');
 
 let bankerKey = sessionStorage.getItem('banker-key') || '';
+const socket = io();
 
 function setLoggedIn(loggedIn) {
   bankerLoginPanel.classList.toggle('hidden', loggedIn);
@@ -156,3 +157,8 @@ if (bankerKey) {
 } else {
   setLoggedIn(false);
 }
+
+socket.on('banker:update', () => {
+  if (!bankerKey) return;
+  refresh().catch(() => {});
+});
