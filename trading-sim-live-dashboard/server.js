@@ -1003,7 +1003,7 @@ app.post('/api/admin/reveal-winner', requireAdmin, (req, res) => {
   state.meta.revealWinner = true;
   state.meta.winnerTeamId = winner.id;
   state.meta.winnerName = winner.name;
-  state.meta.announcement = `Winner reveal: ${winner.name} with $${winner.cash.toLocaleString()}!`;
+  state.meta.announcement = `Winner reveal: ${winner.name} with £${winner.cash.toLocaleString()}!`;
 
   state.transactions.push({
     id: makeId('txn'),

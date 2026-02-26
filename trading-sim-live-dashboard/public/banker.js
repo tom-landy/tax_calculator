@@ -18,7 +18,7 @@ function setLoggedIn(loggedIn) {
 }
 
 function formatMoney(value) {
-  return `$${Number(value || 0).toLocaleString()}`;
+  return `£${Number(value || 0).toLocaleString()}`;
 }
 
 async function fetchBankerState() {

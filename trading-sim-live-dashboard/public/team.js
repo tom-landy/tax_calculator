@@ -23,7 +23,7 @@ let teamPin = sessionStorage.getItem(`team-pin-${teamId}`) || '';
 const socket = io();
 
 function formatMoney(value) {
-  return `$${Number(value || 0).toLocaleString()}`;
+  return `£${Number(value || 0).toLocaleString()}`;
 }
 
 function setLoggedIn(loggedIn) {

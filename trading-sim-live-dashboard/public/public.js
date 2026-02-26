@@ -9,7 +9,7 @@ const winnerRevealEl = document.getElementById('winnerReveal');
 const winnerTextEl = document.getElementById('winnerText');
 
 function formatMoney(value) {
-  return `$${Number(value || 0).toLocaleString()}`;
+  return `£${Number(value || 0).toLocaleString()}`;
 }
 
 function initials(name) {

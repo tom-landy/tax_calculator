@@ -53,7 +53,7 @@ let latestState = null;
 let selectedRound = 1;
 
 function formatMoney(value) {
-  return `$${Number(value || 0).toLocaleString()}`;
+  return `£${Number(value || 0).toLocaleString()}`;
 }
 
 function setStatus(message) {
