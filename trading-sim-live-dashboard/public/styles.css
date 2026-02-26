@@ -20,6 +20,30 @@ body {
   font-family: 'Space Grotesk', sans-serif;
 }
 
+.global-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #111827;
+  border-bottom: 2px solid #0f172a;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.global-nav a {
+  color: #e5e7eb;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.global-nav a:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
 h1,
 h2,
 h3 {
@@ -129,7 +153,7 @@ h3 {
 }
 
 .team-grid {
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .shape-card,
@@ -470,7 +494,7 @@ button.winner-btn {
 }
 
 .countries-layout {
-  max-width: 1300px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 16px;
   display: grid;
@@ -481,7 +505,7 @@ button.winner-btn {
   margin-top: 10px;
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .countries-team-card {
@@ -513,6 +537,14 @@ button.winner-btn {
   .shape-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .team-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .countries-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 900px) {
@@ -533,9 +565,22 @@ button.winner-btn {
   .shape-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .team-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .countries-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 620px) {
+  .global-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
   .shape-grid {
     grid-template-columns: 1fr;
   }

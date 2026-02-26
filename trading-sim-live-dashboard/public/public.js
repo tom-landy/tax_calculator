@@ -44,7 +44,7 @@ function shapeSvg(shape) {
     return `<svg viewBox="0 0 100 100" class="shape-svg"><polygon points="50,16 80,68 20,68" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
   }
   if (key === 'isosceles_triangle') {
-    return `<svg viewBox="0 0 100 100" class="shape-svg"><polygon points="50,10 72,74 28,74" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
+    return `<svg viewBox="0 0 100 100" class="shape-svg"><polygon points="50,24 84,74 16,74" fill="none" stroke="${stroke}" stroke-width="6"/></svg>`;
   }
   if (key === 'semi_circle') {
     return `<svg viewBox="0 0 100 100" class="shape-svg"><path d="M20,66 A30,30 0 0 1 80,66" fill="none" stroke="${stroke}" stroke-width="6"/><line x1="20" y1="66" x2="80" y2="66" stroke="${stroke}" stroke-width="6"/></svg>`;
