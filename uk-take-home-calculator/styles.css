@@ -216,6 +216,10 @@ button:hover {
   align-items: start;
 }
 
+.pension-note-box .note {
+  margin: 0;
+}
+
 .input-grid {
   display: grid;
   gap: 0.8rem 1rem;
