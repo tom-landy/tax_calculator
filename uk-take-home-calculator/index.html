@@ -13,74 +13,191 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="layout">
-      <section class="card controls">
-        <h1>UK Take-Home Pay</h1>
-        <p class="subtitle">Estimate your net pay and tax for the 2025/26 tax year.</p>
+    <main class="app-shell">
+      <header class="card top-bar">
+        <h1>UK Salary, Tax & Pension Calculator</h1>
+        <p class="subtitle">Live estimates for the 2025/26 tax year.</p>
+        <div class="tab-switch" role="tablist" aria-label="Calculator pages">
+          <button type="button" class="tab-btn active" data-tab="tax" role="tab" aria-selected="true">Tax</button>
+          <button type="button" class="tab-btn" data-tab="pension" role="tab" aria-selected="false">Pension</button>
+        </div>
+      </header>
 
-        <label for="salary">Annual Salary (£)</label>
-        <input id="salary" type="number" min="0" step="100" value="35000" />
+      <section id="tab-tax" class="tab-panel active" role="tabpanel">
+        <div class="layout">
+          <section class="card controls">
+            <h2>Tax Inputs</h2>
+            <label for="taxSalary">Annual Salary (£)</label>
+            <input id="taxSalary" type="number" min="0" step="100" value="35000" />
 
-        <label for="taxCodePreset">Tax Code</label>
-        <select id="taxCodePreset">
-          <option value="1257L">1257L (standard)</option>
-          <option value="BR">BR (basic rate only)</option>
-          <option value="D0">D0 (higher rate only)</option>
-          <option value="D1">D1 (additional rate only)</option>
-          <option value="NT">NT (no tax)</option>
-          <option value="S1257L">S1257L (Scotland standard)</option>
-          <option value="SBR">SBR (Scotland basic only)</option>
-          <option value="SD0">SD0 (Scotland intermediate only)</option>
-          <option value="SD1">SD1 (Scotland higher only)</option>
-          <option value="custom">Custom code...</option>
-        </select>
+            <label for="taxCodePresetTax">Tax Code</label>
+            <select id="taxCodePresetTax">
+              <option value="1257L">1257L (standard)</option>
+              <option value="BR">BR (basic rate only)</option>
+              <option value="D0">D0 (higher rate only)</option>
+              <option value="D1">D1 (additional rate only)</option>
+              <option value="NT">NT (no tax)</option>
+              <option value="S1257L">S1257L (Scotland standard)</option>
+              <option value="SBR">SBR (Scotland basic only)</option>
+              <option value="SD0">SD0 (Scotland intermediate only)</option>
+              <option value="SD1">SD1 (Scotland higher only)</option>
+              <option value="custom">Custom code...</option>
+            </select>
 
-        <label for="taxCode">Or Type Any Tax Code</label>
-        <input id="taxCode" type="text" value="1257L" placeholder="e.g. 1257L, K250, S1257L" />
+            <label for="taxCodeTax">Or Type Any Tax Code</label>
+            <input id="taxCodeTax" type="text" value="1257L" placeholder="e.g. 1257L, K250, S1257L" />
 
-        <label for="country">Tax Region</label>
-        <select id="country">
-          <option value="rUK">England / Wales / N. Ireland</option>
-          <option value="scotland">Scotland</option>
-        </select>
+            <label for="countryTax">Tax Region</label>
+            <select id="countryTax">
+              <option value="rUK">England / Wales / N. Ireland</option>
+              <option value="scotland">Scotland</option>
+            </select>
 
-        <button id="calculateBtn" type="button">Calculate</button>
+            <p class="fine-print">
+              NI estimate uses employee Class 1 category A thresholds and rates.
+            </p>
+          </section>
 
-        <p class="fine-print">
-          NI is estimated for employee Class 1, category A. Tax codes can override allowances/rates.
-        </p>
+          <section class="card output">
+            <h2>Tax Results</h2>
+            <div class="grid">
+              <article>
+                <h3>Take-Home / Year</h3>
+                <p id="taxNetYear">£0.00</p>
+              </article>
+              <article>
+                <h3>Take-Home / Month</h3>
+                <p id="taxNetMonth">£0.00</p>
+              </article>
+              <article>
+                <h3>Take-Home / Week</h3>
+                <p id="taxNetWeek">£0.00</p>
+              </article>
+              <article>
+                <h3>Take-Home / Day</h3>
+                <p id="taxNetDay">£0.00</p>
+              </article>
+            </div>
+
+            <div class="breakdown">
+              <p><span>Gross Salary</span><strong id="taxGrossAnnual">£0.00</strong></p>
+              <p><span>Income Tax</span><strong id="taxIncomeTax">£0.00</strong></p>
+              <p><span>National Insurance</span><strong id="taxNi">£0.00</strong></p>
+              <p><span>Total Deductions</span><strong id="taxDeductions">£0.00</strong></p>
+              <p><span>Effective Tax + NI Rate</span><strong id="taxEffectiveRate">0.00%</strong></p>
+            </div>
+
+            <p class="note" id="taxCalcNote"></p>
+          </section>
+        </div>
       </section>
 
-      <section class="card output">
-        <h2>Results</h2>
-        <div class="grid" id="payGrid">
-          <article>
-            <h3>Take-Home / Year</h3>
-            <p id="netYear">£0.00</p>
-          </article>
-          <article>
-            <h3>Take-Home / Month</h3>
-            <p id="netMonth">£0.00</p>
-          </article>
-          <article>
-            <h3>Take-Home / Week</h3>
-            <p id="netWeek">£0.00</p>
-          </article>
-          <article>
-            <h3>Take-Home / Day</h3>
-            <p id="netDay">£0.00</p>
-          </article>
-        </div>
+      <section id="tab-pension" class="tab-panel" role="tabpanel">
+        <div class="layout">
+          <section class="card controls">
+            <h2>Pension Inputs</h2>
+            <label for="pensionSalary">Annual Salary (£)</label>
+            <input id="pensionSalary" type="number" min="0" step="100" value="35000" />
 
-        <div class="breakdown">
-          <p><span>Gross Salary</span><strong id="grossAnnual">£0.00</strong></p>
-          <p><span>Income Tax</span><strong id="incomeTax">£0.00</strong></p>
-          <p><span>National Insurance</span><strong id="ni">£0.00</strong></p>
-          <p><span>Total Deductions</span><strong id="deductions">£0.00</strong></p>
-          <p><span>Effective Tax + NI Rate</span><strong id="effectiveRate">0.00%</strong></p>
-        </div>
+            <label for="taxCodePresetPension">Tax Code</label>
+            <select id="taxCodePresetPension">
+              <option value="1257L">1257L (standard)</option>
+              <option value="BR">BR (basic rate only)</option>
+              <option value="D0">D0 (higher rate only)</option>
+              <option value="D1">D1 (additional rate only)</option>
+              <option value="NT">NT (no tax)</option>
+              <option value="S1257L">S1257L (Scotland standard)</option>
+              <option value="SBR">SBR (Scotland basic only)</option>
+              <option value="SD0">SD0 (Scotland intermediate only)</option>
+              <option value="SD1">SD1 (Scotland higher only)</option>
+              <option value="custom">Custom code...</option>
+            </select>
 
-        <p class="note" id="calcNote"></p>
+            <label for="taxCodePension">Or Type Any Tax Code</label>
+            <input id="taxCodePension" type="text" value="1257L" placeholder="e.g. 1257L, K250, S1257L" />
+
+            <label for="countryPension">Tax Region</label>
+            <select id="countryPension">
+              <option value="rUK">England / Wales / N. Ireland</option>
+              <option value="scotland">Scotland</option>
+            </select>
+
+            <label for="employeePct">Employee Pension (%)</label>
+            <input id="employeePct" type="number" min="0" max="100" step="0.1" value="5" />
+
+            <label for="employerPct">Employer Pension (%)</label>
+            <input id="employerPct" type="number" min="0" max="100" step="0.1" value="3" />
+
+            <label class="check-row" for="enhancedEmployer">
+              <input id="enhancedEmployer" type="checkbox" />
+              Use enhanced employer contribution (6%)
+            </label>
+
+            <label for="currentAge">Current Age</label>
+            <input id="currentAge" type="number" min="16" max="100" step="1" value="30" />
+
+            <label for="retirementAge">Retirement Age</label>
+            <input id="retirementAge" type="number" min="50" max="100" step="1" value="67" />
+
+            <label for="currentPot">Current Pension Pot (£)</label>
+            <input id="currentPot" type="number" min="0" step="100" value="0" />
+
+            <label for="growthRate">Annual Growth Assumption (%)</label>
+            <input id="growthRate" type="number" min="0" max="15" step="0.1" value="5" />
+
+            <label for="drawdownRate">Estimated Drawdown Rate (%)</label>
+            <input id="drawdownRate" type="number" min="1" max="10" step="0.1" value="4" />
+
+            <p class="fine-print">
+              Auto-enrolment minimums are 5% employee and 3% employer on qualifying earnings (£6,240 to £50,270).
+            </p>
+          </section>
+
+          <section class="card output">
+            <h2>Pension-Adjusted Pay</h2>
+            <div class="grid">
+              <article>
+                <h3>Take-Home / Year</h3>
+                <p id="pensionNetYear">£0.00</p>
+              </article>
+              <article>
+                <h3>Take-Home / Month</h3>
+                <p id="pensionNetMonth">£0.00</p>
+              </article>
+              <article>
+                <h3>Take-Home / Week</h3>
+                <p id="pensionNetWeek">£0.00</p>
+              </article>
+              <article>
+                <h3>Take-Home / Day</h3>
+                <p id="pensionNetDay">£0.00</p>
+              </article>
+            </div>
+
+            <div class="breakdown">
+              <p><span>Gross Salary</span><strong id="pensionGrossAnnual">£0.00</strong></p>
+              <p><span>Employee Pension</span><strong id="employeePensionAnnual">£0.00</strong></p>
+              <p><span>Employer Pension</span><strong id="employerPensionAnnual">£0.00</strong></p>
+              <p><span>Income Tax</span><strong id="pensionIncomeTax">£0.00</strong></p>
+              <p><span>National Insurance</span><strong id="pensionNi">£0.00</strong></p>
+              <p><span>Total Deductions incl Pension</span><strong id="pensionDeductions">£0.00</strong></p>
+              <p><span>Effective Deduction Rate</span><strong id="pensionEffectiveRate">0.00%</strong></p>
+            </div>
+
+            <h2 class="sub-heading">Basic Pension Projection</h2>
+            <div class="breakdown">
+              <p><span>Qualifying Earnings Used</span><strong id="qualifyingEarningsAnnual">£0.00</strong></p>
+              <p><span>Estimated Pot at Retirement</span><strong id="projectedPot">£0.00</strong></p>
+              <p><span>Weekly Private Pension at Retirement</span><strong id="privateWeeklyAtRetirement">£0.00</strong></p>
+              <p><span>Estimated State Pension Age</span><strong id="statePensionAge">0</strong></p>
+              <p><span>Full New State Pension (weekly)</span><strong id="statePensionWeekly">£0.00</strong></p>
+              <p><span>Weekly Income at Retirement Age</span><strong id="weeklyAtRetirement">£0.00</strong></p>
+              <p><span>Weekly Income Once State Pension Starts</span><strong id="weeklyWithState">£0.00</strong></p>
+            </div>
+
+            <p class="note" id="pensionCalcNote"></p>
+          </section>
+        </div>
       </section>
     </main>
 
