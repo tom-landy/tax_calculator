@@ -191,12 +191,28 @@ button:hover {
 .pension-flow {
   display: grid;
   gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "personal settings"
+    "results results";
+}
+
+.pension-personal {
+  grid-area: personal;
+}
+
+.pension-settings {
+  grid-area: settings;
+}
+
+.pension-results {
+  grid-area: results;
 }
 
 .input-grid {
   display: grid;
   gap: 0.8rem 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: end;
 }
 
@@ -210,6 +226,14 @@ button:hover {
   .layout {
     width: 100%;
     grid-template-columns: 1fr;
+  }
+
+  .pension-flow {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "personal"
+      "settings"
+      "results";
   }
 
   .input-grid {
