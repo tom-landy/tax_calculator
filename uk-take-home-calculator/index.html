@@ -228,6 +228,30 @@
             </section>
           </div>
 
+          <section class="card pension-lump-sum">
+            <h2>Lump Sum Option</h2>
+            <div class="input-grid">
+              <div>
+                <label class="check-row" for="takeLumpSum">
+                  <input id="takeLumpSum" type="checkbox" />
+                  Take pension lump sum at retirement
+                </label>
+              </div>
+              <div>
+                <label for="lumpSumPct">Lump Sum (%)</label>
+                <input id="lumpSumPct" type="number" min="0" max="25" step="1" value="25" />
+              </div>
+              <div>
+                <label>Estimated Lump Sum</label>
+                <p class="mini-note"><strong id="lumpSumAmount">£0.00</strong></p>
+              </div>
+              <div>
+                <label>Remaining Pot After Lump Sum</label>
+                <p class="mini-note"><strong id="remainingPotAfterLump">£0.00</strong></p>
+              </div>
+            </div>
+          </section>
+
           <section class="card output pension-results">
             <h2>3. Results</h2>
             <div class="grid">

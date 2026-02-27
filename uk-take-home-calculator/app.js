@@ -51,6 +51,8 @@ const pensionInputs = {
   currentPot: document.getElementById("currentPot"),
   growthRate: document.getElementById("growthRate"),
   drawdownRate: document.getElementById("drawdownRate"),
+  takeLumpSum: document.getElementById("takeLumpSum"),
+  lumpSumPct: document.getElementById("lumpSumPct"),
 };
 const selfInputs = {
   structure: document.getElementById("selfStructure"),
@@ -270,6 +272,8 @@ function renderPensionTab() {
   const currentPot = clampToNonNegative(Number(pensionInputs.currentPot.value));
   const growthRate = clamp(Number(pensionInputs.growthRate.value) || 0, 0, 15);
   const drawdownRate = clamp(Number(pensionInputs.drawdownRate.value) || 4, 1, 10);
+  const takeLumpSum = pensionInputs.takeLumpSum.checked;
+  const lumpSumPct = clamp(Number(pensionInputs.lumpSumPct.value) || 0, 0, 25);
 
   const qualifyingEarnings = computeQualifyingEarnings(grossAnnual);
   const employeeContribution = qualifyingEarnings * (employeePct / 100);
@@ -289,7 +293,9 @@ function renderPensionTab() {
   const yearsToRetirement = Math.max(0, retirementAge - currentAge);
   const annualTotalContribution = employeeContribution + employerContribution;
   const projectedPot = futureValue(currentPot, annualTotalContribution, growthRate, yearsToRetirement);
-  const privateWeeklyAtRetirement = (projectedPot * (drawdownRate / 100)) / 52;
+  const lumpSumAmount = takeLumpSum ? projectedPot * (lumpSumPct / 100) : 0;
+  const remainingPotAfterLump = Math.max(0, projectedPot - lumpSumAmount);
+  const privateWeeklyAtRetirement = (remainingPotAfterLump * (drawdownRate / 100)) / 52;
   const currentEffectiveTaxRate = incomeTax / (taxableAfterPension || 1);
   const estimatedPensionTaxWeekly = privateWeeklyAtRetirement * currentEffectiveTaxRate;
   const netPrivateWeeklyAtRetirement = privateWeeklyAtRetirement - estimatedPensionTaxWeekly;
@@ -300,6 +306,8 @@ function renderPensionTab() {
   const weeklyWithState = netPrivateWeeklyAtRetirement + STATE_PENSION_WEEKLY;
 
   setText("projectedPot", formatGBP(projectedPot));
+  setText("lumpSumAmount", formatGBP(lumpSumAmount));
+  setText("remainingPotAfterLump", formatGBP(remainingPotAfterLump));
   setText("privateWeeklyAtRetirement", formatGBP(privateWeeklyAtRetirement));
   setText("pensionTaxWeekly", formatGBP(estimatedPensionTaxWeekly));
   setText("pensionDurationYears", `${pensionDurationYears.toFixed(1)} years`);
@@ -309,7 +317,7 @@ function renderPensionTab() {
   setText("weeklyWithState", formatGBP(weeklyWithState));
   setText(
     "pensionCalcNote",
-    `${TAX_YEAR_LABEL}. State Pension shown is full new State Pension and depends on NI record. Pension tax line assumes your future pension tax rate matches your current effective income tax rate. Pension duration assumes fixed annual withdrawals at your chosen drawdown rate.`
+    `${TAX_YEAR_LABEL}. State Pension shown is full new State Pension and depends on NI record. Pension tax line assumes your future pension tax rate matches your current effective income tax rate. Pension duration assumes fixed annual withdrawals at your chosen drawdown rate. Lump sum assumes a one-off deduction from pension pot at retirement before drawdown calculations.`
   );
 }
 
