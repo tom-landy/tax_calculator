@@ -209,6 +209,13 @@ button:hover {
   width: 100%;
 }
 
+.pension-bottom-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+
 .input-grid {
   display: grid;
   gap: 0.8rem 1rem;
@@ -233,6 +240,10 @@ button:hover {
   }
 
   .pension-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pension-bottom-grid {
     grid-template-columns: 1fr;
   }
 
