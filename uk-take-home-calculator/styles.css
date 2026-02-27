@@ -191,22 +191,22 @@ button:hover {
 .pension-flow {
   display: grid;
   gap: 1rem;
+}
+
+.pension-top-grid {
+  display: grid;
+  gap: 1rem;
   grid-template-columns: 1fr 1fr;
-  grid-template-areas:
-    "personal settings"
-    "results results";
+  align-items: stretch;
 }
 
-.pension-personal {
-  grid-area: personal;
-}
-
+.pension-personal,
 .pension-settings {
-  grid-area: settings;
+  min-height: 520px;
 }
 
 .pension-results {
-  grid-area: results;
+  width: 100%;
 }
 
 .input-grid {
@@ -230,10 +230,15 @@ button:hover {
 
   .pension-flow {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      "personal"
-      "settings"
-      "results";
+  }
+
+  .pension-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pension-personal,
+  .pension-settings {
+    min-height: auto;
   }
 
   .input-grid {

@@ -94,78 +94,80 @@
 
       <section id="tab-pension" class="tab-panel" role="tabpanel">
         <div class="pension-flow">
-          <section class="card pension-personal">
-            <h2>1. Personal Info & Salary</h2>
-            <div class="input-grid">
-              <div>
-                <label for="currentAge">Current Age</label>
-                <input id="currentAge" type="number" min="16" max="100" step="1" value="17" />
+          <div class="pension-top-grid">
+            <section class="card pension-personal">
+              <h2>1. Personal Info & Salary</h2>
+              <div class="input-grid">
+                <div>
+                  <label for="currentAge">Current Age</label>
+                  <input id="currentAge" type="number" min="16" max="100" step="1" value="17" />
+                </div>
+                <div>
+                  <label for="retirementAge">Retirement Age</label>
+                  <input id="retirementAge" type="number" min="50" max="100" step="1" value="67" />
+                </div>
+                <div>
+                  <label for="pensionSalary">Annual Salary (£)</label>
+                  <input id="pensionSalary" type="number" min="0" step="100" value="20000" />
+                </div>
+                <div>
+                  <label for="taxCodePresetPension">Tax Code</label>
+                  <select id="taxCodePresetPension">
+                    <option value="1257L">1257L (standard)</option>
+                    <option value="BR">BR (basic rate only)</option>
+                    <option value="D0">D0 (higher rate only)</option>
+                    <option value="D1">D1 (additional rate only)</option>
+                    <option value="NT">NT (no tax)</option>
+                    <option value="S1257L">S1257L (Scotland standard)</option>
+                    <option value="SBR">SBR (Scotland basic only)</option>
+                    <option value="SD0">SD0 (Scotland intermediate only)</option>
+                    <option value="SD1">SD1 (Scotland higher only)</option>
+                    <option value="custom">Custom code...</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="taxCodePension">Custom Tax Code</label>
+                  <input id="taxCodePension" type="text" value="1257L" placeholder="e.g. 1257L, K250, S1257L" />
+                </div>
+                <div>
+                  <label for="countryPension">Tax Region</label>
+                  <select id="countryPension">
+                    <option value="rUK">England / Wales / N. Ireland</option>
+                    <option value="scotland">Scotland</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label for="retirementAge">Retirement Age</label>
-                <input id="retirementAge" type="number" min="50" max="100" step="1" value="67" />
-              </div>
-              <div>
-                <label for="pensionSalary">Annual Salary (£)</label>
-                <input id="pensionSalary" type="number" min="0" step="100" value="20000" />
-              </div>
-              <div>
-                <label for="taxCodePresetPension">Tax Code</label>
-                <select id="taxCodePresetPension">
-                  <option value="1257L">1257L (standard)</option>
-                  <option value="BR">BR (basic rate only)</option>
-                  <option value="D0">D0 (higher rate only)</option>
-                  <option value="D1">D1 (additional rate only)</option>
-                  <option value="NT">NT (no tax)</option>
-                  <option value="S1257L">S1257L (Scotland standard)</option>
-                  <option value="SBR">SBR (Scotland basic only)</option>
-                  <option value="SD0">SD0 (Scotland intermediate only)</option>
-                  <option value="SD1">SD1 (Scotland higher only)</option>
-                  <option value="custom">Custom code...</option>
-                </select>
-              </div>
-              <div>
-                <label for="taxCodePension">Custom Tax Code</label>
-                <input id="taxCodePension" type="text" value="1257L" placeholder="e.g. 1257L, K250, S1257L" />
-              </div>
-              <div>
-                <label for="countryPension">Tax Region</label>
-                <select id="countryPension">
-                  <option value="rUK">England / Wales / N. Ireland</option>
-                  <option value="scotland">Scotland</option>
-                </select>
-              </div>
-            </div>
-          </section>
+            </section>
 
-          <section class="card pension-settings">
-            <h2>2. Pension Settings</h2>
-            <div class="input-grid">
-              <div>
-                <label for="employeePct">Employee Pension (%)</label>
-                <input id="employeePct" type="number" min="0" max="100" step="0.1" value="5" />
+            <section class="card pension-settings">
+              <h2>2. Pension Settings</h2>
+              <div class="input-grid">
+                <div>
+                  <label for="employeePct">Employee Pension (%)</label>
+                  <input id="employeePct" type="number" min="0" max="100" step="0.1" value="5" />
+                </div>
+                <div>
+                  <label for="employerPct">Employer Pension (%)</label>
+                  <input id="employerPct" type="number" min="0" max="100" step="0.1" value="3" />
+                </div>
+                <div>
+                  <label for="currentPot">Current Pension Pot (£)</label>
+                  <input id="currentPot" type="number" min="0" step="100" value="0" />
+                </div>
+                <div>
+                  <label for="growthRate">Annual Growth Assumption (%)</label>
+                  <input id="growthRate" type="number" min="0" max="15" step="0.1" value="5" />
+                </div>
+                <div>
+                  <label for="drawdownRate">Estimated Drawdown Rate (%)</label>
+                  <input id="drawdownRate" type="number" min="1" max="10" step="0.1" value="4" />
+                </div>
               </div>
-              <div>
-                <label for="employerPct">Employer Pension (%)</label>
-                <input id="employerPct" type="number" min="0" max="100" step="0.1" value="3" />
-              </div>
-              <div>
-                <label for="currentPot">Current Pension Pot (£)</label>
-                <input id="currentPot" type="number" min="0" step="100" value="0" />
-              </div>
-              <div>
-                <label for="growthRate">Annual Growth Assumption (%)</label>
-                <input id="growthRate" type="number" min="0" max="15" step="0.1" value="5" />
-              </div>
-              <div>
-                <label for="drawdownRate">Estimated Drawdown Rate (%)</label>
-                <input id="drawdownRate" type="number" min="1" max="10" step="0.1" value="4" />
-              </div>
-            </div>
-            <p class="fine-print">
-              Auto-enrolment minimums are 5% employee and 3% employer on qualifying earnings (£6,240 to £50,270).
-            </p>
-          </section>
+              <p class="fine-print">
+                Auto-enrolment minimums are 5% employee and 3% employer on qualifying earnings (£6,240 to £50,270).
+              </p>
+            </section>
+          </div>
 
           <section class="card output pension-results">
             <h2>3. Results</h2>
