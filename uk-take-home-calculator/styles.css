@@ -188,9 +188,31 @@ button:hover {
   margin-top: 1.1rem;
 }
 
+.pension-flow {
+  display: grid;
+  gap: 1rem;
+}
+
+.input-grid {
+  display: grid;
+  gap: 0.8rem 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+.mini-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
 @media (max-width: 860px) {
   .layout {
     width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .input-grid {
     grid-template-columns: 1fr;
   }
 }

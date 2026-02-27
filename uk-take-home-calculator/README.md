@@ -10,6 +10,8 @@ Simple frontend app to estimate UK take-home pay and pension outcomes from annua
 - Live take-home pay by day/week/month/year
 - Tax/NI breakdown on both tabs
 - Pension tab:
+  - Student-friendly flow: Personal info/salary, pension settings, then results
+  - Early-career salary predictor by industry + UK region (with optional auto-fill)
   - Employee and employer contribution percentages
   - Enhanced employer toggle (6%)
   - Auto-enrolment qualifying earnings logic

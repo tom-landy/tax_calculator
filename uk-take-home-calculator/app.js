@@ -3,6 +3,28 @@ const STATE_PENSION_WEEKLY = 230.25;
 const QUALIFYING_EARNINGS_LOWER = 6240;
 const QUALIFYING_EARNINGS_UPPER = 50270;
 const CURRENT_YEAR = 2026;
+const EARLY_CAREER_BASE_SALARY = {
+  retail: 19000,
+  hospitality: 18500,
+  construction: 22000,
+  healthcare: 21000,
+  business: 20500,
+  engineering: 23000,
+  digital: 24000,
+  creative: 20000,
+  education: 19500,
+};
+const UK_REGION_SALARY_MULTIPLIER = {
+  london: 1.15,
+  southEast: 1.07,
+  eastEngland: 1.03,
+  southWest: 0.98,
+  midlands: 0.97,
+  northEngland: 0.95,
+  wales: 0.93,
+  scotland: 0.96,
+  northernIreland: 0.92,
+};
 
 const RUK_BANDS = [
   { upper: 50270, rate: 0.2 },
@@ -46,6 +68,9 @@ const pensionInputs = {
   currentPot: document.getElementById("currentPot"),
   growthRate: document.getElementById("growthRate"),
   drawdownRate: document.getElementById("drawdownRate"),
+  industry: document.getElementById("salaryIndustry"),
+  location: document.getElementById("salaryLocation"),
+  usePredictedSalary: document.getElementById("usePredictedSalary"),
 };
 
 function formatGBP(value) {
@@ -185,6 +210,14 @@ function computeQualifyingEarnings(gross) {
   return Math.max(0, Math.min(gross, QUALIFYING_EARNINGS_UPPER) - QUALIFYING_EARNINGS_LOWER);
 }
 
+function estimateEarlyCareerSalary(industry, location, age) {
+  const base = EARLY_CAREER_BASE_SALARY[industry] || 20000;
+  const locationMultiplier = UK_REGION_SALARY_MULTIPLIER[location] || 1;
+  const ageFactor = age <= 16 ? 0.9 : age === 17 ? 0.95 : 1;
+  const predicted = base * locationMultiplier * ageFactor;
+  return Math.round(predicted / 100) * 100;
+}
+
 function estimateStatePensionAge(currentAge) {
   const birthYear = CURRENT_YEAR - currentAge;
   if (birthYear < 1960) {
@@ -234,11 +267,24 @@ function renderTaxTab() {
 }
 
 function renderPensionTab() {
+  const currentAge = clamp(Number(pensionInputs.currentAge.value) || 30, 16, 100);
+  const predictedSalary = estimateEarlyCareerSalary(
+    pensionInputs.industry.value,
+    pensionInputs.location.value,
+    currentAge
+  );
+  const usePredictedSalary = pensionInputs.usePredictedSalary.checked;
+
+  setText("predictedSalaryLine", formatGBP(predictedSalary));
+  pensionInputs.salary.readOnly = usePredictedSalary;
+  if (usePredictedSalary) {
+    pensionInputs.salary.value = String(predictedSalary);
+  }
+
   const grossAnnual = clampToNonNegative(Number(pensionInputs.salary.value));
   const parsed = parseTaxCode(pensionInputs.code.value, pensionInputs.country.value);
   const employeePct = clamp(Number(pensionInputs.employeePct.value) || 0, 0, 100);
   const employerPct = clamp(Number(pensionInputs.employerPct.value) || 0, 0, 100);
-  const currentAge = clamp(Number(pensionInputs.currentAge.value) || 30, 16, 100);
   const retirementAge = clamp(Number(pensionInputs.retirementAge.value) || 67, 50, 100);
   const currentPot = clampToNonNegative(Number(pensionInputs.currentPot.value));
   const growthRate = clamp(Number(pensionInputs.growthRate.value) || 0, 0, 15);
@@ -282,7 +328,7 @@ function renderPensionTab() {
   setText("weeklyWithState", formatGBP(weeklyWithState));
   setText(
     "pensionCalcNote",
-    `${TAX_YEAR_LABEL}. State Pension shown is full new State Pension and depends on NI record. Pension tax line assumes your future pension tax rate matches your current effective income tax rate. Pension duration assumes fixed annual withdrawals at your chosen drawdown rate.`
+    `${TAX_YEAR_LABEL}. Salary predictor is based on industry + UK region + early-career age factor. State Pension shown is full new State Pension and depends on NI record. Pension tax line assumes your future pension tax rate matches your current effective income tax rate. Pension duration assumes fixed annual withdrawals at your chosen drawdown rate.`
   );
 }
 
