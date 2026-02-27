@@ -263,20 +263,26 @@ function renderPensionTab() {
   const annualTotalContribution = employeeContribution + employerContribution;
   const projectedPot = futureValue(currentPot, annualTotalContribution, growthRate, yearsToRetirement);
   const privateWeeklyAtRetirement = (projectedPot * (drawdownRate / 100)) / 52;
+  const currentEffectiveTaxRate = incomeTax / (taxableAfterPension || 1);
+  const estimatedPensionTaxWeekly = privateWeeklyAtRetirement * currentEffectiveTaxRate;
+  const netPrivateWeeklyAtRetirement = privateWeeklyAtRetirement - estimatedPensionTaxWeekly;
+  const pensionDurationYears = 100 / drawdownRate;
 
   const statePensionAge = estimateStatePensionAge(currentAge);
-  const weeklyAtRetirement = privateWeeklyAtRetirement + (retirementAge >= statePensionAge ? STATE_PENSION_WEEKLY : 0);
-  const weeklyWithState = privateWeeklyAtRetirement + STATE_PENSION_WEEKLY;
+  const weeklyAtRetirement = netPrivateWeeklyAtRetirement + (retirementAge >= statePensionAge ? STATE_PENSION_WEEKLY : 0);
+  const weeklyWithState = netPrivateWeeklyAtRetirement + STATE_PENSION_WEEKLY;
 
   setText("projectedPot", formatGBP(projectedPot));
   setText("privateWeeklyAtRetirement", formatGBP(privateWeeklyAtRetirement));
+  setText("pensionTaxWeekly", formatGBP(estimatedPensionTaxWeekly));
+  setText("pensionDurationYears", `${pensionDurationYears.toFixed(1)} years`);
   setText("statePensionAge", String(statePensionAge));
   setText("statePensionWeekly", formatGBP(STATE_PENSION_WEEKLY));
   setText("weeklyAtRetirement", formatGBP(weeklyAtRetirement));
   setText("weeklyWithState", formatGBP(weeklyWithState));
   setText(
     "pensionCalcNote",
-    `${TAX_YEAR_LABEL}. State Pension shown is full new State Pension and depends on NI record. Pension tax/NI estimate assumes salary sacrifice-style treatment for employee contributions.`
+    `${TAX_YEAR_LABEL}. State Pension shown is full new State Pension and depends on NI record. Pension tax line assumes your future pension tax rate matches your current effective income tax rate. Pension duration assumes fixed annual withdrawals at your chosen drawdown rate.`
   );
 }
 
