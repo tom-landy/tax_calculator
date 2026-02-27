@@ -19,6 +19,7 @@
         <p class="subtitle">Live estimates for the 2025/26 tax year.</p>
         <div class="tab-switch" role="tablist" aria-label="Calculator pages">
           <button type="button" class="tab-btn active" data-tab="tax" role="tab" aria-selected="true">Tax</button>
+          <button type="button" class="tab-btn" data-tab="self-employed" role="tab" aria-selected="false">Self Employed</button>
           <button type="button" class="tab-btn" data-tab="pension" role="tab" aria-selected="false">Pension</button>
         </div>
       </header>
@@ -88,6 +89,64 @@
             </div>
 
             <p class="note" id="taxCalcNote"></p>
+          </section>
+        </div>
+      </section>
+
+      <section id="tab-self-employed" class="tab-panel" role="tabpanel">
+        <div class="layout">
+          <section class="card controls">
+            <h2>Self Employed Inputs</h2>
+            <label for="selfStructure">Business Structure</label>
+            <select id="selfStructure">
+              <option value="sole">Sole Trader</option>
+              <option value="limited">Limited Company</option>
+            </select>
+
+            <label for="selfProfit">Annual Profit / Earnings (£)</label>
+            <input id="selfProfit" type="number" min="0" step="100" value="30000" />
+
+            <label for="selfCountry">Tax Region (for sole trader)</label>
+            <select id="selfCountry">
+              <option value="rUK">England / Wales / N. Ireland</option>
+              <option value="scotland">Scotland</option>
+            </select>
+
+            <p class="fine-print">
+              First pass estimate: Sole trader uses Income Tax + Class 4 NI. Limited company uses Corporation Tax bands.
+            </p>
+          </section>
+
+          <section class="card output">
+            <h2>Self Employed Results</h2>
+            <div class="grid">
+              <article>
+                <h3>Tax / Year</h3>
+                <p id="selfTaxYear">£0.00</p>
+              </article>
+              <article>
+                <h3>Tax / Month</h3>
+                <p id="selfTaxMonth">£0.00</p>
+              </article>
+              <article>
+                <h3>Tax / Week</h3>
+                <p id="selfTaxWeek">£0.00</p>
+              </article>
+              <article>
+                <h3>Post-Tax Profit / Year</h3>
+                <p id="selfPostTaxYear">£0.00</p>
+              </article>
+            </div>
+
+            <div class="breakdown">
+              <p><span>Annual Profit</span><strong id="selfGrossAnnual">£0.00</strong></p>
+              <p><span>Income Tax / Corporation Tax</span><strong id="selfMainTax">£0.00</strong></p>
+              <p><span>Class 4 NI (sole trader)</span><strong id="selfNi">£0.00</strong></p>
+              <p><span>Total Tax</span><strong id="selfTotalTax">£0.00</strong></p>
+              <p><span>Effective Tax Rate</span><strong id="selfEffectiveRate">0.00%</strong></p>
+            </div>
+
+            <p class="note" id="selfCalcNote"></p>
           </section>
         </div>
       </section>

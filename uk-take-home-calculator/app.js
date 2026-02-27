@@ -25,6 +25,12 @@ const NI_THRESHOLDS = {
   mainRate: 0.08,
   upperRate: 0.02,
 };
+const CLASS4_THRESHOLDS = {
+  lower: 12570,
+  upper: 50270,
+  mainRate: 0.06,
+  upperRate: 0.02,
+};
 
 const taxInputs = {
   salary: document.getElementById("taxSalary"),
@@ -45,6 +51,11 @@ const pensionInputs = {
   currentPot: document.getElementById("currentPot"),
   growthRate: document.getElementById("growthRate"),
   drawdownRate: document.getElementById("drawdownRate"),
+};
+const selfInputs = {
+  structure: document.getElementById("selfStructure"),
+  profit: document.getElementById("selfProfit"),
+  country: document.getElementById("selfCountry"),
 };
 
 function formatGBP(value) {
@@ -180,6 +191,23 @@ function computeNI(gross) {
   return mainBand * NI_THRESHOLDS.mainRate + upperBand * NI_THRESHOLDS.upperRate;
 }
 
+function computeClass4NI(profit) {
+  const mainBand = Math.max(0, Math.min(profit, CLASS4_THRESHOLDS.upper) - CLASS4_THRESHOLDS.lower);
+  const upperBand = Math.max(0, profit - CLASS4_THRESHOLDS.upper);
+  return mainBand * CLASS4_THRESHOLDS.mainRate + upperBand * CLASS4_THRESHOLDS.upperRate;
+}
+
+function computeCorporationTax(profit) {
+  if (profit <= 50000) {
+    return profit * 0.19;
+  }
+  if (profit >= 250000) {
+    return profit * 0.25;
+  }
+  const marginalRelief = (250000 - profit) * (3 / 200);
+  return profit * 0.25 - marginalRelief;
+}
+
 function computeQualifyingEarnings(gross) {
   return Math.max(0, Math.min(gross, QUALIFYING_EARNINGS_UPPER) - QUALIFYING_EARNINGS_LOWER);
 }
@@ -285,8 +313,44 @@ function renderPensionTab() {
   );
 }
 
+function renderSelfEmployedTab() {
+  const profit = clampToNonNegative(Number(selfInputs.profit.value));
+  const structure = selfInputs.structure.value;
+  const parsed = parseTaxCode("1257L", selfInputs.country.value);
+
+  let mainTax = 0;
+  let ni = 0;
+  let note = "";
+
+  if (structure === "limited") {
+    mainTax = computeCorporationTax(profit);
+    note =
+      "Limited company estimate uses Corporation Tax only (19% small profits, marginal band up to 25%).";
+  } else {
+    mainTax = computeIncomeTax(profit, parsed);
+    ni = computeClass4NI(profit);
+    note = "Sole trader estimate uses Income Tax + Class 4 NI on annual profits.";
+  }
+
+  const totalTax = mainTax + ni;
+  const postTax = Math.max(0, profit - totalTax);
+  const effectiveRate = (totalTax / (profit || 1)) * 100;
+
+  setText("selfGrossAnnual", formatGBP(profit));
+  setText("selfMainTax", formatGBP(mainTax));
+  setText("selfNi", formatGBP(ni));
+  setText("selfTotalTax", formatGBP(totalTax));
+  setText("selfTaxYear", formatGBP(totalTax));
+  setText("selfTaxMonth", formatGBP(totalTax / 12));
+  setText("selfTaxWeek", formatGBP(totalTax / 52));
+  setText("selfPostTaxYear", formatGBP(postTax));
+  setText("selfEffectiveRate", `${effectiveRate.toFixed(2)}%`);
+  setText("selfCalcNote", `${TAX_YEAR_LABEL}. ${note}`);
+}
+
 function updateAll() {
   renderTaxTab();
+  renderSelfEmployedTab();
   renderPensionTab();
 }
 
